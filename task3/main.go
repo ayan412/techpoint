@@ -17,16 +17,14 @@ const (
 
 func main() {
 
-	//	var noErrors bool
-
 	// Переменная для хранения пути к текущему файлу
 	var filePathFull string
 
 	// Цикл для обработки каждого файла в каталоге "59_3"
 	for i := 1; i <= 18; i++ {
 		iStr := strconv.Itoa(i)
+		// Путь до файла
 		filePathFull = fmt.Sprintf("%s%s", filePath, iStr)
-		//.Println(filePathFull)
 
 		// Открытие файла
 		f, err := os.Open(filePathFull)
@@ -47,30 +45,24 @@ func main() {
 		}
 
 		//Преобразование количества наборов из строки в число
-		num := strings.TrimSuffix(numOfSetsStr, "\n")
-		numInt, _ := strconv.Atoi(num)
-		fmt.Println("first number:", numInt)
+		numOfSetsStrTrim := strings.TrimSuffix(numOfSetsStr, "\n")
+		numOfSetsInt, _ := strconv.Atoi(numOfSetsStrTrim)
+		fmt.Println("first number:", numOfSetsInt)
 
 		// Создание Writer для записи в выходной файл
 		outWrite := bufio.NewWriter(writeOutFile(i))
 		defer outWrite.Flush() // Сброс буфера при окончании работы с ним
 
-		//fmt.Fprintf(outWrite, "%s", checkCode(rd, numInt))
-		// Обработка каждого набора чисел
-		//checkCode(rd, numInt)
-
-		for j := 1; j <= numInt; j++ {
+		// Обработка каждого набора строк (задач)
+		for j := 1; j <= numOfSetsInt; j++ {
 			setOftasks, err := rd.ReadBytes('\n')
 			if err != nil {
 				fmt.Println("error in reading line", err)
 				break
 			}
-			//fmt.Println(setOftasks)
+			// Запись результата в выходной файл
 			fmt.Fprintf(outWrite, "%s\n", checkTaskStatus(setOftasks))
-			//return result
-
 		}
-
 	}
 }
 
@@ -88,59 +80,49 @@ func writeOutFile(iter int) *os.File {
 	return outFile
 }
 
-// Функция 
+// Функция для проверки корректности последовательности задач в каждой строке
 func checkTaskStatus(setOftasks []byte) string {
+	// Запись статуса задач в мапу
 	statusCode := make(map[string]string)
+	// Счетчик ошибок в строке
 	ErrCount := 0
+	// Цикл для работы с каждой задачой в текущей строке
 	for _, val := range setOftasks {
-		//fmt.Println(val)
 		switch val {
 		case 'M':
-			// (пере)запущенную задачу можно только отменить ИЛИ она должна быть запущена ИЛИ запустить снова после закрытия
+			// Задачи НЕТ (empty) ИЛИ (пере)запущенную задачу можно только отменить ИЛИ она должна быть запущена ИЛИ запустить снова после закрытия
 			if _, ok := statusCode["task"]; !ok || statusCode["task"] == "cancel" || statusCode["task"] == "close" {
 				statusCode["task"] = "start"
-				//fmt.Printf("previous was: %v\n", mm)
 			} else {
-				//fmt.Println("ERRRRROOOOR")
 				ErrCount++
 			}
 		case 'R':
 			// запущенную задачу можно перезапустить
 			if _, ok := statusCode["task"]; ok && statusCode["task"] == "start" {
 				statusCode["task"] = "restart"
-				//fmt.Printf("previous was: %v\n", rr)
 			} else {
-				//fmt.Println("ERRRRROOOOR")
 				ErrCount++
 			}
 		case 'C':
-			// запущенную задачу можно отменить И перезапущенная задача отменяется
+			// запущенную задачу можно отменить ИЛИ перезапущенная задача отменяется
 			if _, ok := statusCode["task"]; ok && statusCode["task"] == "start" || statusCode["task"] == "restart" {
 				statusCode["task"] = "cancel"
-				//fmt.Printf("previous was: %v\n", cc)
 			} else {
-				//fmt.Println("ERRRRROOOOR")
 				ErrCount++
 			}
 		case 'D':
 			// запущенную задачу можно завершить
 			if _, ok := statusCode["task"]; ok && statusCode["task"] == "start" {
 				statusCode["task"] = "close"
-				//fmt.Printf("current is: %v\n", string(val))
-				//fmt.Printf("previous was: %v\n", dd)
 			} else {
-				//fmt.Println("ERRRRROOOOR")
 				ErrCount++
 			}
 		case '\n':
-			//
+			// Для случая символа новой строки - символ есть И перед ним был статус "Завершено"
 			if _, ok := statusCode["task"]; ok && statusCode["task"] == "close" {
-				//fmt.Printf("NEW LINE - previous was: %v\n", ss)
 			} else {
-				//fmt.Println("END OF LINE ERRRRROOOOR!!!!! - TASK WAS NOT CLOSED")
 				ErrCount++
 			}
-			//fmt.Println("Количество ошибок в наборе задач:", ErrCount)
 		}
 
 	}
@@ -149,64 +131,4 @@ func checkTaskStatus(setOftasks []byte) string {
 	} else {
 		return "YES"
 	}
-
 }
-
-/*
-	statusCode := make(map[string]string)
-		for _, val := range setOftasks {
-			fmt.Println(val)
-			switch val {
-			case 'M':
-				// (пере)запущенную задачу можно только отменить ИЛИ она должна быть запущена ИЛИ запустить снова после закрытия
-				if mm, ok := statusCode["task"]; !ok || statusCode["task"] == "cancel" || statusCode["task"] == "close" {
-					statusCode["task"] = "start"
-					fmt.Printf("previous was: %v\n", mm)
-				} else {
-					fmt.Println("ERRRRROOOOR")
-					continue
-				}
-			case 'R':
-				// запущенную задачу можно перезапустить
-				if rr, ok := statusCode["task"]; !ok || statusCode["task"] == "start" {
-					statusCode["task"] = "restart"
-					fmt.Printf("previous was: %v\n", rr)
-				} else {
-					fmt.Println("ERRRRROOOOR")
-					continue
-				}
-			case 'C':
-				// запущенную задачу можно отменить ИЛИ перезапущенная задача отменяется
-				if cc, ok := statusCode["task"]; !ok || statusCode["task"] == "start" || statusCode["task"] == "restart" {
-					statusCode["task"] = "cancel"
-					fmt.Printf("previous was: %v\n", cc)
-				} else {
-					fmt.Println("ERRRRROOOOR")
-					continue
-				}
-			case 'D':
-				// запущенную задачу можно завершить
-				if dd, ok := statusCode["task"]; !ok || statusCode["task"] == "start" {
-					statusCode["task"] = "close"
-					fmt.Printf("current is: %v\n", string(val))
-					fmt.Printf("previous was: %v\n", dd)
-				} else {
-					fmt.Println("ERRRRROOOOR")
-					continue
-				}
-			case '\n':
-				//
-				if ss, ok := statusCode["task"]; ok && statusCode["task"] == "close" {
-					fmt.Printf("NEW LINEE - previous was: %v\n", ss)
-				} else {
-					fmt.Println("NEW LINE - ERRRRROOOOR!!!!!")
-
-				}
-				}
-			}
-
-		}
-
-	}
-
-*/
