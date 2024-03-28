@@ -1,13 +1,14 @@
-// Дописать комментарии 26032024
-
 package main
 
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
+	"runtime/pprof"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -15,8 +16,28 @@ const (
 	outputFilePath string = "./output/" // Каталог, в который будут записываться выходные файлы
 )
 
+// Функция для измерения времени выполнения
+func duration(msg string, start time.Time) {
+	log.Printf("%v: %v\n", msg, time.Since(start))
+}
+
+// Функция для отслеживания времени выполнения функции
+func track(msg string) (string, time.Time) {
+	return msg, time.Now()
+}
+
 func main() {
 
+	f, err := os.Create("memprofile.prof")
+    if err != nil {
+        fmt.Println("Не удалось создать файл профиля:", err)
+        return
+    }
+    defer f.Close()
+
+    pprof.WriteHeapProfile(f)
+
+	defer duration(track("readInput"))
 	// Переменная для хранения пути к текущему файлу
 	var filePathFull string
 
@@ -64,6 +85,7 @@ func main() {
 			fmt.Fprintf(outWrite, "%s\n", checkTaskStatus(setOftasks))
 		}
 	}
+
 }
 
 // Функция для создания выходного файла
