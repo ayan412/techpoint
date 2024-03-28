@@ -37,7 +37,7 @@ func main() {
 		// Создание Reader для чтения файла
 		rd := bufio.NewReader(f)
 
-		// Чтение количества наборов чисел в файле
+		// Чтение количества наборов в файле
 		numOfSetsStr, err := rd.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading num of sets:", err)
