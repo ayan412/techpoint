@@ -19,7 +19,7 @@ func readTwoNumbers(reader *bufio.Reader) (a, b int) {
 	for {
 		numAstr, err := reader.ReadString(' ')
 		if err != nil {
-			if err == io.EOF {
+			if err == io.EOF || err == io.ErrUnexpectedEOF {
 				break
 			} else {
 				fmt.Println("Error reading numAstr:", err)
@@ -29,7 +29,7 @@ func readTwoNumbers(reader *bufio.Reader) (a, b int) {
 
 		numBstr, err := reader.ReadString('\n')
 		if err != nil {
-			if err == io.EOF {
+			if err == io.EOF || err == io.ErrUnexpectedEOF {
 				break
 			} else {
 				fmt.Println("Error reading numBstr:", err)
@@ -96,18 +96,39 @@ func main() {
 		//Преобразование количества наборов из строки в число
 		numOfSetsStrTrim := strings.TrimSuffix(numOfSetsStr, "\n")
 		numOfSetsInt, _ := strconv.Atoi(numOfSetsStrTrim)
-		fmt.Println("first number:", numOfSetsInt)
+		fmt.Println("amount of sets:", numOfSetsInt)
 
 		// Создание Writer для записи в выходной файл
 		outWrite := bufio.NewWriter(writeOutFile(i))
 		defer outWrite.Flush() // Сброс буфера при окончании работы с ним
 
 		// Получение размеров склада: строки и столбцы склада
-		for j := 1; j <= numOfSetsInt; j++ {
-			numAi, numBi := readTwoNumbers(rdr)
-			fmt.Printf("numAi:%v numBi:%v\n", numAi, numBi)
+		// ЗДЕСЬ СЧИТЫВАТЕЛЬ ОСТАНОВИТСЯ НА строке с РАЗМЕРАми ПЕРВОГО СКЛАДА в байтах
+		numOfbytes, preff, err := rdr.ReadLine()
+		if err != nil && preff == true {
+			fmt.Println("Error in reading the slice of bytes:", err)
 		}
-
-		//как считать сразу все размеры складов?
+		// размеры
+		verticDim, horizonDim := checkDim(numOfbytes)
+		fmt.Println("строки и столбцы:", verticDim, horizonDim)
+		for j := 1; j <= verticDim; j++ {
+			rowsOfStore, err := rdr.ReadString('\n')
+			if err != nil {
+				fmt.Println("ERRRORS:", err)
+			}
+			fmt.Printf("dimensions of Store: %v", rowsOfStore)
+		}
 	}
+}
+
+func checkDim(numOfbytes []byte) (vertic, horizon int) {
+	// если входной срез содержит больше 3 байтов
+	if len(numOfbytes) > 3 {
+		return 0, 0
+	}
+	// Преобразование байтов в целое число
+	verticalDim, _ := strconv.Atoi(string(numOfbytes[0]))
+	horizontalDim, _ := strconv.Atoi(string(numOfbytes[2]))
+
+	return verticalDim, horizontalDim
 }
