@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	//"reflect"
 	"strconv"
 	"strings"
 )
@@ -103,32 +105,56 @@ func main() {
 		defer outWrite.Flush() // Сброс буфера при окончании работы с ним
 
 		// Получение размеров склада: строки и столбцы склада
-		// ЗДЕСЬ СЧИТЫВАТЕЛЬ ОСТАНОВИТСЯ НА строке с РАЗМЕРАми ПЕРВОГО СКЛАДА в байтах
-		numOfbytes, preff, err := rdr.ReadLine()
-		if err != nil && preff == true {
+		rowStrWithNL, err := rdr.ReadString('\n')
+		fmt.Println(rowStrWithNL)
+		if err != nil {
+			fmt.Println("Error in reading row with dimensions:", err)
+		}
+		rowStr := strings.TrimSpace(rowStrWithNL)
+		fmt.Println(rowStr)
+		// Преобразование строки в числа
+		numbersStr := strings.Split(rowStr, " ")
+		numbers := make([]int, len(numbersStr))
+
+		for i, numStr := range numbersStr {
+			num, err := strconv.Atoi(numStr)
+			if err != nil {
+				fmt.Println("Ошибка преобразования числа:", err)
+				return
+			}
+			numbers[i] = num
+		}
+
+		// Выводим результат
+		fmt.Println(numbers[1])
+
+		if err != nil {
 			fmt.Println("Error in reading the slice of bytes:", err)
 		}
 		// размеры
-		verticDim, horizonDim := checkDim(numOfbytes)
+		verticDim, horizonDim := checkDim(rowStr)
 		fmt.Println("строки и столбцы:", verticDim, horizonDim)
 		for j := 1; j <= verticDim; j++ {
 			rowsOfStore, err := rdr.ReadString('\n')
 			if err != nil {
 				fmt.Println("ERRRORS:", err)
 			}
-			fmt.Printf("dimensions of Store: %v", rowsOfStore)
+			fmt.Printf("%v", rowsOfStore)
 		}
 	}
 }
 
-func checkDim(numOfbytes []byte) (vertic, horizon int) {
-	// если входной срез содержит больше 3 байтов
-	if len(numOfbytes) > 3 {
+func checkDim(numOfbytes string) (vertic, horizon int) {
+	// если входной срез меньше 3
+	if len(numOfbytes) < 3 {
+		fmt.Println("Wrong dimensions")
 		return 0, 0
 	}
 	// Преобразование байтов в целое число
 	verticalDim, _ := strconv.Atoi(string(numOfbytes[0]))
-	horizontalDim, _ := strconv.Atoi(string(numOfbytes[2]))
+	horizontalDim, _ := strconv.Atoi(string(numOfbytes[1]))
 
 	return verticalDim, horizontalDim
 }
+
+//придумать цикл, который бы ориентировался на длину среза байтов > 5 байта
