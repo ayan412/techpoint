@@ -110,6 +110,7 @@ func main() {
 		if err != nil {
 			fmt.Println("Error in reading row with dimensions:", err)
 		}
+		
 		rowStr := strings.TrimSpace(rowStrWithNL)
 		fmt.Println(rowStr)
 		// Преобразование строки в числа
