@@ -102,7 +102,29 @@ func main() {
 
 		// Создание Writer для записи в выходной файл
 		outWrite := bufio.NewWriter(writeOutFile(i))
-		defer outWrite.Flush() // Сброс буфера при окончании работы с ним
+		defer outWrite.Flush() 
+
+		for j := 1; j <= numOfSetsInt; j++ {
+			readDim(rdr)
+		}
+		
+	}
+}
+
+func checkDim(numbersStr []string) (vertic, horizon int) {
+	// если входной срез меньше 3
+	if len(numbersStr) > 2 {
+		fmt.Println("Wrong dimensions")
+		return 0, 0
+	}
+	// Преобразование байтов в целое число
+	verticalDim, _ := strconv.Atoi(numbersStr[0])
+	horizontalDim, _ := strconv.Atoi(numbersStr[1])
+
+	return verticalDim, horizontalDim
+}
+
+func readDim(rdr *bufio.Reader) {
 
 		// Получение размеров склада: строки и столбцы склада
 		rowStrWithNL, err := rdr.ReadString('\n')
@@ -127,18 +149,5 @@ func main() {
 			}
 			fmt.Printf("%v", rowsOfStore)
 		}
-	}
-}
 
-func checkDim(numbersStr []string) (vertic, horizon int) {
-	// если входной срез меньше 3
-	if len(numbersStr) > 2 {
-		fmt.Println("Wrong dimensions")
-		return 0, 0
-	}
-	// Преобразование байтов в целое число
-	verticalDim, _ := strconv.Atoi(numbersStr[0])
-	horizontalDim, _ := strconv.Atoi(numbersStr[1])
-
-	return verticalDim, horizontalDim
-}
+} 
