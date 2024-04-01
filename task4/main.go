@@ -106,34 +106,19 @@ func main() {
 
 		// Получение размеров склада: строки и столбцы склада
 		rowStrWithNL, err := rdr.ReadString('\n')
-		fmt.Println(rowStrWithNL)
+		//fmt.Printf("rowStrWithNL:%vlentgh:%v\n", rowStrWithNL, len(rowStrWithNL)) // rowStrWithNL:23 99 (+\n) lentgh:6
 		if err != nil {
 			fmt.Println("Error in reading row with dimensions:", err)
 		}
-		
+
 		rowStr := strings.TrimSpace(rowStrWithNL)
-		fmt.Println(rowStr)
-		// Преобразование строки в числа
+		//fmt.Printf("Length after TRIM:%v\n", len(rowStr)) //Length after TRIM:5
+		// Преобразование строки
 		numbersStr := strings.Split(rowStr, " ")
-		numbers := make([]int, len(numbersStr))
+		//fmt.Printf("numOfSetsStr:%v lentgh:%v\n", numbersStr, len(numbersStr)) //numbersStr:[23 99] lentgh:2
 
-		for i, numStr := range numbersStr {
-			num, err := strconv.Atoi(numStr)
-			if err != nil {
-				fmt.Println("Ошибка преобразования числа:", err)
-				return
-			}
-			numbers[i] = num
-		}
-
-		// Выводим результат
-		fmt.Println(numbers[1])
-
-		if err != nil {
-			fmt.Println("Error in reading the slice of bytes:", err)
-		}
-		// размеры
-		verticDim, horizonDim := checkDim(rowStr)
+		// считываем и выводим только размеры нужного склада в зав-ти от длины его строк
+		verticDim, horizonDim := checkDim(numbersStr)
 		fmt.Println("строки и столбцы:", verticDim, horizonDim)
 		for j := 1; j <= verticDim; j++ {
 			rowsOfStore, err := rdr.ReadString('\n')
@@ -145,17 +130,15 @@ func main() {
 	}
 }
 
-func checkDim(numOfbytes string) (vertic, horizon int) {
+func checkDim(numbersStr []string) (vertic, horizon int) {
 	// если входной срез меньше 3
-	if len(numOfbytes) < 3 {
+	if len(numbersStr) > 2 {
 		fmt.Println("Wrong dimensions")
 		return 0, 0
 	}
 	// Преобразование байтов в целое число
-	verticalDim, _ := strconv.Atoi(string(numOfbytes[0]))
-	horizontalDim, _ := strconv.Atoi(string(numOfbytes[1]))
+	verticalDim, _ := strconv.Atoi(numbersStr[0])
+	horizontalDim, _ := strconv.Atoi(numbersStr[1])
 
 	return verticalDim, horizontalDim
 }
-
-//придумать цикл, который бы ориентировался на длину среза байтов > 5 байта
