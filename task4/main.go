@@ -3,10 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"os"
-
-	//"reflect"
 	"strconv"
 	"strings"
 )
@@ -15,44 +12,6 @@ const (
 	filePath       string = "./63_4/"   // Каталог, содержащий входные файлы
 	outputFilePath string = "./output/" // Каталог, в который будут записываться выходные файлы
 )
-
-// Функция для чтения двух чисел из файла
-func readTwoNumbers(reader *bufio.Reader) (a, b int) {
-	for {
-		numAstr, err := reader.ReadString(' ')
-		if err != nil {
-			if err == io.EOF || err == io.ErrUnexpectedEOF {
-				break
-			} else {
-				fmt.Println("Error reading numAstr:", err)
-				return
-			}
-		}
-
-		numBstr, err := reader.ReadString('\n')
-		if err != nil {
-			if err == io.EOF || err == io.ErrUnexpectedEOF {
-				break
-			} else {
-				fmt.Println("Error reading numBstr:", err)
-				return
-			}
-		}
-
-		// Удаление символа новой строки '\n'
-		numAi, err := strconv.Atoi((string(numAstr[:len(numAstr)-1])))
-		if err != nil {
-			fmt.Printf("Error while trimming:%s", err)
-		}
-		numBi, err := strconv.Atoi((string(numBstr[:len(numBstr)-1])))
-		if err != nil {
-			fmt.Printf("Error while trimming:%s", err)
-		}
-		return numAi, numBi
-
-	}
-	return
-}
 
 // Функция для создания выходного файла
 func writeOutFile(iter int) *os.File {
@@ -102,12 +61,12 @@ func main() {
 
 		// Создание Writer для записи в выходной файл
 		outWrite := bufio.NewWriter(writeOutFile(i))
-		defer outWrite.Flush() 
+		defer outWrite.Flush()
 
 		for j := 1; j <= numOfSetsInt; j++ {
 			readDim(rdr)
 		}
-		
+
 	}
 }
 
@@ -126,28 +85,30 @@ func checkDim(numbersStr []string) (vertic, horizon int) {
 
 func readDim(rdr *bufio.Reader) {
 
-		// Получение размеров склада: строки и столбцы склада
-		rowStrWithNL, err := rdr.ReadString('\n')
-		//fmt.Printf("rowStrWithNL:%vlentgh:%v\n", rowStrWithNL, len(rowStrWithNL)) // rowStrWithNL:23 99 (+\n) lentgh:6
+	// Получение размеров склада: строки и столбцы склада
+	rowStrWithNL, err := rdr.ReadString('\n')
+	//fmt.Printf("rowStrWithNL:%vlentgh:%v\n", rowStrWithNL, len(rowStrWithNL)) // rowStrWithNL:23 99 (+\n) lentgh:6
+	if err != nil {
+		fmt.Println("Error in reading row with dimensions:", err)
+	}
+
+	rowStr := strings.TrimSpace(rowStrWithNL)
+	//fmt.Printf("Length after TRIM:%v\n", len(rowStr)) //Length after TRIM:5
+	// Преобразование строки
+	numbersStr := strings.Split(rowStr, " ")
+	//fmt.Printf("numOfSetsStr:%v lentgh:%v\n", numbersStr, len(numbersStr)) //numbersStr:[23 99] lentgh:2
+
+	// считываем и выводим только размеры нужного склада в зав-ти от длины его строк
+	verticDim, horizonDim := checkDim(numbersStr)
+	fmt.Println("строки и столбцы:", verticDim, horizonDim)
+	for j := 1; j <= verticDim; j++ {
+		rowsOfStore, err := rdr.ReadString('\n')
 		if err != nil {
-			fmt.Println("Error in reading row with dimensions:", err)
+			fmt.Println("ERRRORS:", err)
 		}
+		fmt.Printf("%v", rowsOfStore)
+	}
 
-		rowStr := strings.TrimSpace(rowStrWithNL)
-		//fmt.Printf("Length after TRIM:%v\n", len(rowStr)) //Length after TRIM:5
-		// Преобразование строки
-		numbersStr := strings.Split(rowStr, " ")
-		//fmt.Printf("numOfSetsStr:%v lentgh:%v\n", numbersStr, len(numbersStr)) //numbersStr:[23 99] lentgh:2
+}
 
-		// считываем и выводим только размеры нужного склада в зав-ти от длины его строк
-		verticDim, horizonDim := checkDim(numbersStr)
-		fmt.Println("строки и столбцы:", verticDim, horizonDim)
-		for j := 1; j <= verticDim; j++ {
-			rowsOfStore, err := rdr.ReadString('\n')
-			if err != nil {
-				fmt.Println("ERRRORS:", err)
-			}
-			fmt.Printf("%v", rowsOfStore)
-		}
-
-} 
+// внести вывод в двумерный масссив или срез и уже работать с этим типом данных
