@@ -101,14 +101,28 @@ func readDim(rdr *bufio.Reader) {
 	// считываем и выводим только размеры нужного склада в зав-ти от длины его строк
 	verticDim, horizonDim := checkDim(numbersStr)
 	fmt.Println("строки и столбцы:", verticDim, horizonDim)
-	for j := 1; j <= verticDim; j++ {
-		rowsOfStore, err := rdr.ReadString('\n')
+
+	// slice := make([]string, horizonDim)
+	
+	
+	for j := 0; j < verticDim; j++ {
+		matrix := make([][]string, verticDim)
+	for i := range matrix {
+		matrix[i] = make([]string, horizonDim)
+	}
+		rowOfStore, err := rdr.ReadString('\n')
+		rowOfStore = strings.Trim(rowOfStore, "\n")
+		//fmt.Println(rowsOfStore)
 		if err != nil {
 			fmt.Println("ERRRORS:", err)
 		}
-		fmt.Printf("%v", rowsOfStore)
+		for i, val := range rowOfStore {
+			matrix[j][i] = string(val)
+		}
+		fmt.Println("var:", matrix[1][2])
 	}
-
+	
+	
 }
 
 // внести вывод в двумерный масссив или срез и уже работать с этим типом данных
