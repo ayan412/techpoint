@@ -102,27 +102,34 @@ func readDim(rdr *bufio.Reader) {
 	verticDim, horizonDim := checkDim(numbersStr)
 	fmt.Println("строки и столбцы:", verticDim, horizonDim)
 
-	// slice := make([]string, horizonDim)
-	
-	
+	var mdArray [2][2]int
+	result := make(map[string][]int)
 	for j := 0; j < verticDim; j++ {
-		matrix := make([][]string, verticDim)
-	for i := range matrix {
-		matrix[i] = make([]string, horizonDim)
-	}
+		matrix := make([][]string, horizonDim)
+		//fmt.Println(matrix)
+		for i := range matrix {
+			matrix[i] = make([]string, horizonDim)
+		}
+		//fmt.Println(matrix)
 		rowOfStore, err := rdr.ReadString('\n')
 		rowOfStore = strings.Trim(rowOfStore, "\n")
-		//fmt.Println(rowsOfStore)
+		//fmt.Println(rowOfStore)
 		if err != nil {
 			fmt.Println("ERRRORS:", err)
 		}
-		for i, val := range rowOfStore {
-			matrix[j][i] = string(val)
+		for ind, val := range rowOfStore {
+			matrix[j][ind] = string(val)
+			switch val {
+			case 'A':
+				mdArray[0][0] = j
+				mdArray[0][1] = ind
+			case 'B':
+				mdArray[1][0] = j
+				mdArray[1][1] = ind
+			}
 		}
-		fmt.Println("var:", matrix[1][2])
 	}
-	
-	
+	result["A"] = mdArray[0][:]
+	result["B"] = mdArray[1][:]
+	fmt.Println(result)
 }
-
-// внести вывод в двумерный масссив или срез и уже работать с этим типом данных
