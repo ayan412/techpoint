@@ -31,6 +31,11 @@ func main() {
 	// Переменная для хранения пути к текущему файлу
 	var filePathFull string
 
+	type allSlices struct {
+		num int
+		data [][]string
+	}
+
 	// Цикл для обработки каждого файла в каталоге "59_3"
 	for i := 1; i <= 1; i++ {
 		iStr := strconv.Itoa(i)
@@ -62,10 +67,13 @@ func main() {
 		// Создание Writer для записи в выходной файл
 		outWrite := bufio.NewWriter(writeOutFile(i))
 		defer outWrite.Flush()
-
+		var struct1 allSlices
 		for j := 1; j <= numOfSetsInt; j++ {
-			readDim(rdr)
+			struct1.data = readDim(rdr)
+			struct1.num = j
 		}
+		// надо добавить название структуры для каждой итерации
+		fmt.Println(struct1)
 
 	}
 }
@@ -83,7 +91,7 @@ func checkDim(numbersStr []string) (vertic, horizon int) {
 	return verticalDim, horizontalDim
 }
 
-func readDim(rdr *bufio.Reader) {
+func readDim(rdr *bufio.Reader) [][]string {
 
 	// Получение размеров склада: строки и столбцы склада
 	rowStrWithNL, err := rdr.ReadString('\n')
@@ -111,6 +119,7 @@ func readDim(rdr *bufio.Reader) {
 	// Срез (из кол-ва рядов) срезов - [[] [] [] [] [] [] []]
 	matrix := make([][]string, verticDim)
 	//fmt.Println(matrix)
+
 	for j := 1; j <= verticDim; j++ {
 		rowOfStore, err := rdr.ReadString('\n')
 		rowOfStore = strings.Trim(rowOfStore, "\n")
@@ -135,13 +144,12 @@ func readDim(rdr *bufio.Reader) {
 		matrix[j-1] = slice
 	}
 
-	fmt.Println(matrix)
-
 	result["A"] = mdArray[1][:]
 	result["B"] = mdArray[2][:]
 	fmt.Println(result)
 
 	subtracPositions(result)
+	return matrix
 
 }
 
@@ -192,7 +200,7 @@ func subtracPositions(result map[string][]int) {
 }
 
 func moveRobot() {
-	for i := 0; i < aSlice[0]; i++ {
-		matrix 
-	}
+	// for i := 0; i < aSlice[0]; i++ {
+	// 	matrix 
+	// }
 }
