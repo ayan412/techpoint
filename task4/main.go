@@ -99,37 +99,100 @@ func readDim(rdr *bufio.Reader) {
 	//fmt.Printf("numOfSetsStr:%v lentgh:%v\n", numbersStr, len(numbersStr)) //numbersStr:[23 99] lentgh:2
 
 	// считываем и выводим только размеры нужного склада в зав-ти от длины его строк
-	verticDim, horizonDim := checkDim(numbersStr)
-	fmt.Println("строки и столбцы:", verticDim, horizonDim)
-
-	var mdArray [2][2]int
+	var mdArray [3][2]int
 	result := make(map[string][]int)
-	for j := 0; j < verticDim; j++ {
-		matrix := make([][]string, horizonDim)
-		//fmt.Println(matrix)
-		for i := range matrix {
-			matrix[i] = make([]string, horizonDim)
-		}
-		//fmt.Println(matrix)
+
+	verticDim, horizonDim := checkDim(numbersStr)
+	//fmt.Println("строки и столбцы:", verticDim, horizonDim)
+	mdArray[0][0] = verticDim
+	mdArray[0][1] = horizonDim
+	result["MAX"] = mdArray[0][:]
+
+	// Срез (из кол-ва рядов) срезов - [[] [] [] [] [] [] []]
+	matrix := make([][]string, verticDim)
+	//fmt.Println(matrix)
+	for j := 1; j <= verticDim; j++ {
 		rowOfStore, err := rdr.ReadString('\n')
 		rowOfStore = strings.Trim(rowOfStore, "\n")
 		//fmt.Println(rowOfStore)
 		if err != nil {
 			fmt.Println("ERRRORS:", err)
 		}
-		for ind, val := range rowOfStore {
-			matrix[j][ind] = string(val)
-			switch val {
+		slice := make([]string, horizonDim)
+		for index, value := range rowOfStore {
+
+			slice[index] = string(value)
+
+			switch value {
 			case 'A':
-				mdArray[0][0] = j
-				mdArray[0][1] = ind
-			case 'B':
 				mdArray[1][0] = j
-				mdArray[1][1] = ind
+				mdArray[1][1] = index + 1
+			case 'B':
+				mdArray[2][0] = j
+				mdArray[2][1] = index + 1 
 			}
 		}
+		matrix[j-1] = slice
 	}
-	result["A"] = mdArray[0][:]
-	result["B"] = mdArray[1][:]
+
+	fmt.Println(matrix)
+
+	result["A"] = mdArray[1][:]
+	result["B"] = mdArray[2][:]
 	fmt.Println(result)
+
+	subtracPositions(result)
+
+}
+
+func subtracPositions(result map[string][]int) {
+	// Извлекаем срезы для MAX, A и B
+	maxSlice := result["MAX"]
+	aSlice := result["A"]
+	bSlice := result["B"]
+
+	// Срез для хранения разности чисел между MAX и A
+	resultASlice := []int{}
+
+	// Разность чисел между MAX и A
+	for i := 0; i < len(maxSlice); i++ {
+		resultASlice = append(resultASlice, maxSlice[i]-aSlice[i])
+	}
+
+	// Срез для хранения разности чисел между MAX и B
+	resultBSlice := []int{}
+
+	// Разность чисел между MAX и B
+	for i := 0; i < len(maxSlice); i++ {
+		resultBSlice = append(resultBSlice, maxSlice[i]-bSlice[i])
+	}
+	// Сумма разницы чисел между МАХ и А
+	sumA := 0
+	for i := 0; i < len(resultASlice); i++ {
+		sumA += resultASlice[i]
+	}
+	fmt.Println("len A", sumA)
+	// Сумма разницы чисел между МАХ и В
+	sumB := 0
+	for i := 0; i < len(resultBSlice); i++ {
+		sumB += resultBSlice[i]
+	}
+	fmt.Println("len B", sumB)
+	if sumA > sumB {
+		// алгоритм по которому будет дописываться путь робота в точку 0;0
+
+	} else {
+		// алгоритм по которому будет дописываться путь робота в точку MAX
+	}
+
+	// Выводим разность
+	fmt.Println("Разность чисел между MAX и A:", resultASlice)
+	fmt.Println("Разность чисел между MAX и B:", resultBSlice)
+
+}
+
+func moveRobot() {
+	for i := 0; i < aSlice[0]; i++ {
+		matrix 
+	}
 }
