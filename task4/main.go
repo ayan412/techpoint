@@ -31,11 +31,6 @@ func main() {
 	// Переменная для хранения пути к текущему файлу
 	var filePathFull string
 
-	type allSlices struct {
-		num int
-		data [][]string
-	}
-
 	// Цикл для обработки каждого файла в каталоге "59_3"
 	for i := 1; i <= 1; i++ {
 		iStr := strconv.Itoa(i)
@@ -67,19 +62,30 @@ func main() {
 		// Создание Writer для записи в выходной файл
 		outWrite := bufio.NewWriter(writeOutFile(i))
 		defer outWrite.Flush()
-		var struct1 allSlices
+
+		allSlices := make([][][]string, numOfSetsInt)
+		slcOfslc := make([][]string, 7)
 		for j := 1; j <= numOfSetsInt; j++ {
-			struct1.data = readDim(rdr)
-			struct1.num = j
+			//var slcOfslc [][]string
+			
+			//fmt.Println("slc:",slcOfslc)
+			for k, v := range readDim(rdr) {
+				slcOfslc[k] = v
+				fmt.Println(k, v)
+			}
+			fmt.Println(slcOfslc)
+			allSlices[j-1] = slcOfslc
 		}
+		
+		fmt.Println("ALL:",allSlices)
 		// надо добавить название структуры для каждой итерации
-		fmt.Println(struct1)
+		//fmt.Println(MyStruct)
 
 	}
 }
 
 func checkDim(numbersStr []string) (vertic, horizon int) {
-	// если входной срез меньше 3
+	// если входной срез больше 2 ошибка
 	if len(numbersStr) > 2 {
 		fmt.Println("Wrong dimensions")
 		return 0, 0
@@ -138,7 +144,7 @@ func readDim(rdr *bufio.Reader) [][]string {
 				mdArray[1][1] = index + 1
 			case 'B':
 				mdArray[2][0] = j
-				mdArray[2][1] = index + 1 
+				mdArray[2][1] = index + 1
 			}
 		}
 		matrix[j-1] = slice
@@ -201,6 +207,6 @@ func subtracPositions(result map[string][]int) {
 
 func moveRobot() {
 	// for i := 0; i < aSlice[0]; i++ {
-	// 	matrix 
+	// 	matrix
 	// }
 }
