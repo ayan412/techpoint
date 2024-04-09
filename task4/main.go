@@ -64,20 +64,21 @@ func main() {
 		defer outWrite.Flush()
 
 		allSlices := make([][][]string, numOfSetsInt)
-		slcOfslc := make([][]string, 7)
+		//slcOfslc := make([][]string, 7) // by value
 		for j := 1; j <= numOfSetsInt; j++ {
 			//var slcOfslc [][]string
-			
+			slcOfslc := make([][]string, 7) // every inter-n will be new slcOfslc
 			//fmt.Println("slc:",slcOfslc)
 			for k, v := range readDim(rdr) {
 				slcOfslc[k] = v
 				fmt.Println(k, v)
 			}
-			fmt.Println(slcOfslc)
-			allSlices[j-1] = slcOfslc
+			fmt.Println("sls by value:", slcOfslc) // by value
+			//allSlices[j-1] = append(allSlices[j-1], slcOfslc...)
+			allSlices[j-1] = slcOfslc // by value
 		}
-		
-		fmt.Println("ALL:",allSlices)
+
+		fmt.Println("ALL:", allSlices)
 		// надо добавить название структуры для каждой итерации
 		//fmt.Println(MyStruct)
 
