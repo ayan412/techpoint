@@ -63,22 +63,29 @@ func main() {
 		outWrite := bufio.NewWriter(writeOutFile(i))
 		defer outWrite.Flush()
 
-		allSlices := make([][][]string, numOfSetsInt)
-		//slcOfslc := make([][]string, 7) // by value
-		for j := 1; j <= numOfSetsInt; j++ {
-			//var slcOfslc [][]string
-			slcOfslc := make([][]string, 7) // every inter-n will be new slcOfslc
-			//fmt.Println("slc:",slcOfslc)
-			for k, v := range readDim(rdr) {
-				slcOfslc[k] = v
-				fmt.Println(k, v)
-			}
-			fmt.Println("sls by value:", slcOfslc) // by value
-			//allSlices[j-1] = append(allSlices[j-1], slcOfslc...)
-			allSlices[j-1] = slcOfslc // by value
-		}
+		//readDim(rdr, numOfSetsInt)
 
-		fmt.Println("ALL:", allSlices)
+		for j := 1; j <= numOfSetsInt; j++ {
+			readDim(rdr)
+		}
+		
+
+		// allSlices := make([][][]string, numOfSetsInt)
+		// //slcOfslc := make([][]string, 7) // by value
+		// for j := 1; j <= numOfSetsInt; j++ {
+		// 	//var slcOfslc [][]string
+		// 	slcOfslc := make([][]string, 7) // every inter-n will be new slcOfslc
+		// 	//fmt.Println("slc:",slcOfslc)
+		// 	for k, v := range readDim(rdr) {
+		// 		slcOfslc[k] = v
+		// 		fmt.Println(k, v)
+		// 	}
+		// 	fmt.Println("sls by value:", slcOfslc) // by value
+		// 	//allSlices[j-1] = append(allSlices[j-1], slcOfslc...)
+		// 	allSlices[j-1] = slcOfslc // by value
+		// }
+
+		// fmt.Println("ALL:", allSlices)
 		// надо добавить название структуры для каждой итерации
 		//fmt.Println(MyStruct)
 
@@ -98,7 +105,7 @@ func checkDim(numbersStr []string) (vertic, horizon int) {
 	return verticalDim, horizontalDim
 }
 
-func readDim(rdr *bufio.Reader) [][]string {
+func readDim(rdr *bufio.Reader) {
 
 	// Получение размеров склада: строки и столбцы склада
 	rowStrWithNL, err := rdr.ReadString('\n')
@@ -156,8 +163,19 @@ func readDim(rdr *bufio.Reader) [][]string {
 	fmt.Println(result)
 
 	subtracPositions(result)
-	return matrix
+	allSlices := make([][][]string, 1)
+	
+			//var slcOfslc [][]string
+			slcOfslc := make([][]string, len(matrix)) // every inter-n will be new slcOfslc
+			fmt.Println("slc:",slcOfslc)
+			fmt.Println("matrix:",matrix)
+			for k, v := range matrix {
+				slcOfslc[k] = v
+				//fmt.Println(k, v)
+			}	
+	allSlices[0] = slcOfslc
 
+fmt.Println("allSlices:", allSlices)
 }
 
 func subtracPositions(result map[string][]int) {
