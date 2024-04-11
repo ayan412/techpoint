@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -67,7 +68,28 @@ func main() {
 		for j := 1; j <= numOfSetsInt; j++ {
 			allSlices[j-1] = readDim(rdr)
 		}
-		fmt.Println(allSlices)
+		fmt.Println(reflect.TypeOf(allSlices[0]))
+		fmt.Println(len(allSlices[0][0]))
+		fmt.Println(allSlices[0][0])
+		//fmt.Println(allSlices[0])
+
+		robotA := robotPosition{2, 3}
+		robotB := robotPosition{3, 4}
+
+		pathA := bfs(robotA, robotPosition{0, 0}, "a")
+		pathB := bfs(robotB, robotPosition{len(wHouse) - 1, len(wHouse[0]) - 1}, "b")
+
+		for point, robot := range pathA.route {
+			wHouse[point.x][point.y] = robot
+		}
+
+		for point, robot := range pathB.route {
+			wHouse[point.x][point.y] = robot
+		}
+
+		for _, row := range wHouse {
+			fmt.Println(row)
+		}
 	}
 }
 
@@ -114,14 +136,14 @@ func readDim(rdr *bufio.Reader) [][]string {
 	//fmt.Println(matrix)
 
 	for j := 1; j <= verticDim; j++ {
-		rowOfStore, err := rdr.ReadString('\n')
-		rowOfStore = strings.Trim(rowOfStore, "\n")
-		//fmt.Println(rowOfStore)
+		rowOfWh, err := rdr.ReadString('\n')
+		rowOfWh = strings.Trim(rowOfWh, "\n")
+		//fmt.Println(rowOfWh)
 		if err != nil {
 			fmt.Println("ERRRORS:", err)
 		}
 		slice := make([]string, horizonDim)
-		for index, value := range rowOfStore {
+		for index, value := range rowOfWh {
 
 			slice[index] = string(value)
 
@@ -191,8 +213,51 @@ func subtracPositions(result map[string][]int) {
 
 }
 
-func moveRobot() {
-	// for i := 0; i < aSlice[0]; i++ {
-	// 	matrix
-	// }
+type robotPosition struct {
+	x, y int
+}
+
+type robotPath struct {
+	success bool
+	route   map[robotPosition]string
+}
+
+var wHouse [][]string
+
+func isValidCell(x, y int) bool {
+	if x < 0 || x >= len(wHouse) || y < 0 || y >= len(wHouse[0]) {
+		return false
+	} else {
+		if wHouse[x][y] == "x" {
+			return false
+		}
+	}
+	return true
+}
+
+// Функция обхода в ширину (BFS)
+func bfs(start, end robotPosition, name string) robotPath {
+	visited := make(map[robotPosition]bool)
+	queue := []robotPosition{start}
+	route := make(map[robotPosition]string)
+
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+
+		if current == end {
+			return robotPath{true, route}
+		}
+
+		// Перемещаемся во все соседние клетки
+		neighbors := []robotPosition{{current.x - 1, current.y}, {current.x + 1, current.y}, {current.x, current.y - 1}, {current.x, current.y + 1}}
+		for _, neighbor := range neighbors {
+			if isValidCell(neighbor.x, neighbor.y) && !visited[neighbor] {
+				visited[neighbor] = true
+				queue = append(queue, neighbor)
+				route[neighbor] = name
+			}
+		}
+	}
+	return robotPath{false, nil}
 }
