@@ -68,16 +68,20 @@ func main() {
 		for j := 1; j <= numOfSetsInt; j++ {
 			allSlices[j-1] = readDim(rdr)
 		}
-		fmt.Println(reflect.TypeOf(allSlices[0]))
-		fmt.Println(len(allSlices[0][0]))
-		fmt.Println(allSlices[0][0])
+
+		fmt.Println("reflect:", reflect.TypeOf(allSlices[0]))
+		//fmt.Println(len(allSlices[0][0]))
+		//fmt.Println(allSlices[0][0])
 		//fmt.Println(allSlices[0])
+
+		wHouse = allSlices[0]
+		//fmt.Println("wH:", wHouse)
 
 		robotA := robotPosition{2, 3}
 		robotB := robotPosition{3, 4}
 
 		pathA := bfs(robotA, robotPosition{0, 0}, "a")
-		pathB := bfs(robotB, robotPosition{len(wHouse) - 1, len(wHouse[0]) - 1}, "b")
+		pathB := bfs(robotB, robotPosition{len(allSlices[0]) - 1, len(allSlices[0][0]) - 1}, "b")
 
 		for point, robot := range pathA.route {
 			wHouse[point.x][point.y] = robot
@@ -88,7 +92,7 @@ func main() {
 		}
 
 		for _, row := range wHouse {
-			fmt.Println(row)
+			fmt.Println("row", row)
 		}
 	}
 }
@@ -193,13 +197,13 @@ func subtracPositions(result map[string][]int) {
 	for i := 0; i < len(resultASlice); i++ {
 		sumA += resultASlice[i]
 	}
-	fmt.Println("len A", sumA)
+	//fmt.Println("len A", sumA)
 	// Сумма разницы чисел между МАХ и В
 	sumB := 0
 	for i := 0; i < len(resultBSlice); i++ {
 		sumB += resultBSlice[i]
 	}
-	fmt.Println("len B", sumB)
+	//fmt.Println("len B", sumB)
 	if sumA > sumB {
 		// алгоритм по которому будет дописываться путь робота в точку 0;0
 
@@ -208,8 +212,8 @@ func subtracPositions(result map[string][]int) {
 	}
 
 	// Выводим разность
-	fmt.Println("Разность чисел между MAX и A:", resultASlice)
-	fmt.Println("Разность чисел между MAX и B:", resultBSlice)
+	//fmt.Println("Разность чисел между MAX и A:", resultASlice)
+	//fmt.Println("Разность чисел между MAX и B:", resultBSlice)
 
 }
 
@@ -228,12 +232,14 @@ func isValidCell(x, y int) bool {
 	if x < 0 || x >= len(wHouse) || y < 0 || y >= len(wHouse[0]) {
 		return false
 	} else {
-		if wHouse[x][y] == "x" {
+		if wHouse[x][y] == "#" || wHouse[x][y] == "A" || wHouse[x][y] == "B" {
 			return false
 		}
 	}
+	//fmt.Println("wHouse", wHouse)
 	return true
-}
+	
+}   
 
 // Функция обхода в ширину (BFS)
 func bfs(start, end robotPosition, name string) robotPath {
