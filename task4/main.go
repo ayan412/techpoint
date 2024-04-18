@@ -69,31 +69,54 @@ func main() {
 			allSlices[j-1] = readDim(rdr)
 		}
 
-		fmt.Println("reflect:", reflect.TypeOf(allSlices[0]))
+		fmt.Println("reflect wHouse:", reflect.TypeOf(allSlices[0]))
 		//fmt.Println(len(allSlices[0][0]))
 		//fmt.Println(allSlices[0][0])
 		//fmt.Println(allSlices[0])
 
-		wHouse = allSlices[0]
+		wHouse := allSlices[0]
 		//fmt.Println("wH:", wHouse)
 
-		robotA := robotPosition{2, 3}
-		robotB := robotPosition{3, 4}
+		//Start walking the maze run
+		steps := run(wHouse, point{3, 4}, point{len(wHouse) - 1, len(wHouse[0]) - 1})
 
-		pathA := bfs(robotA, robotPosition{0, 0}, "a")
-		pathB := bfs(robotB, robotPosition{len(allSlices[0]) - 1, len(allSlices[0][0]) - 1}, "b")
+		//Give a path according to steps
+		wHouse = changeMatrix(wHouse, steps)
 
-		for point, robot := range pathA.route {
-			wHouse[point.x][point.y] = robot
+		fmt.Println("steps:")
+		for x := range steps {
+			for y := range steps[i] {
+				fmt.Printf("%4d", steps[x][y])
+			}
+			fmt.Println()
+
+			fmt.Println("changed maze:")
+			for i := range wHouse {
+				for j := range wHouse[i] {
+					fmt.Printf("%s", wHouse[i][j])
+				}
+				fmt.Println()
+			}
 		}
+		//robotA := point{2, 3}
+		//robotB := Position{3, 4}
 
-		for point, robot := range pathB.route {
-			wHouse[point.x][point.y] = robot
-		}
+		// pathA := bfs(robotA, point{0, 0}, "a")
+		// // := bfs(robotB, Position{len(allSlices[0]) - 1, len(allSlices[0][0]) - 1}, "b")
 
-		for _, row := range wHouse {
-			fmt.Println("row", row)
-		}
+		// for point, robot := range pathA.route {
+		// 	wHouse[point.x][point.y] = robot
+		// }
+
+		// // for point, robot := range pathB.route {
+		// // 	wHouse[point.x][point.y] = robot
+		// // }
+
+		// for _, row := range wHouse {
+		// 	fmt.Println("row", row)
+		// }
+
+		// shortPath(wHouse, robotA, point{0, 0})
 	}
 }
 
@@ -217,53 +240,165 @@ func subtracPositions(result map[string][]int) {
 
 }
 
-type robotPosition struct {
+// Define the coordinate structure
+type point struct {
 	x, y int
 }
 
-type robotPath struct {
-	success bool
-	route   map[robotPosition]string
+// Define the difference between the top, bottom, left, and right elements of the current element
+var directions = [4]point{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+
+// Define the action of the next difference
+func (p point) add(direction point) point {
+	return point{p.x + direction.x, p.y + direction.y}
 }
 
-var wHouse [][]string
-
-func isValidCell(x, y int) bool {
-	if x < 0 || x >= len(wHouse) || y < 0 || y >= len(wHouse[0]) {
-		return false
-	} else {
-		if wHouse[x][y] == "#" || wHouse[x][y] == "A" || wHouse[x][y] == "B" {
-			return false
-		}
+// Judging the situation where next cannot go: 1. Encounter obstacles, go out of the boundary 2. Have already gone through, can’t go back 3. Can’t go back in a circle
+func (next point) isNotAccess(maze [][]string) bool {
+	if next.x < 0 || next.x >= len(maze) {
+		return true
 	}
-	//fmt.Println("wHouse", wHouse)
+	if next.y < 0 || next.y >= len(maze) {
+		return true
+	}
+	if maze[next.x][next.y] == "#" || maze[next.x][next.y] == "B" || maze[next.x][next.y] == "A" {
+		return true
+	}
+	// if steps[next.x][next.y] != "." {
+	// 	return true
+	// }
+	// в файле есть матрицы в которых это условие не нужно!!!!!!
+	// if next.x == start.x && next.y == start.y {
+	// 	return true
+	// }
 	return true
-	
-}   
+}
 
-// Функция обхода в ширину (BFS)
-func bfs(start, end robotPosition, name string) robotPath {
-	visited := make(map[robotPosition]bool)
-	queue := []robotPosition{start}
-	route := make(map[robotPosition]string)
-
-	for len(queue) > 0 {
-		current := queue[0]
-		queue = queue[1:]
-
-		if current == end {
-			return robotPath{true, route}
-		}
-
-		// Перемещаемся во все соседние клетки
-		neighbors := []robotPosition{{current.x - 1, current.y}, {current.x + 1, current.y}, {current.x, current.y - 1}, {current.x, current.y + 1}}
-		for _, neighbor := range neighbors {
-			if isValidCell(neighbor.x, neighbor.y) && !visited[neighbor] {
-				visited[neighbor] = true
-				queue = append(queue, neighbor)
-				route[neighbor] = name
+// здесь в исходном примере из правого нижнего в левый верхний начинается поиск
+func changeMatrix(maze [][]string, steps [][]int) [][]string {
+	var current = point{len(maze) - 1, len(maze[0]) - 1}
+	var start = point{0, 0}
+	for current != start {
+		//Find the surrounding nodes, whether it is the value of the current node -1
+		for _, direction := range directions {
+			next := current.add(direction)
+			// Judge whether it is legal
+			if next.x >= 0 && next.x < len(maze) && next.y >= 0 && next.y < len(maze[0]) && steps[next.x][next.y] == steps[current.x][current.y] {
+				//Modify maze to 6
+				maze[current.x][current.y] = "b"
+				current = next
 			}
 		}
 	}
-	return robotPath{false, nil}
+	maze[0][0] = "b"
+	return maze
 }
+
+func run(maze [][]string, start, end point) [][]int {
+	//Generate steps matrix
+	steps := make([][]int, len(maze))
+	for i := range steps {
+		steps[i] = make([]int, len(maze[i]))
+	}
+	//Generate a queue and put the first node in the queue
+	Q := []point{start}
+
+	//If the queue is not empty, it means there is no end
+	for len(Q) > 0 {
+		//Remove the head element and delete it
+		peek := Q[0]
+		fmt.Println("Queue is:", Q)
+
+		Q = Q[1:]
+
+		if peek == end {
+			break
+		}
+		//Take one step up, down, left, and right of the element to see if it works
+		for _, direction := range directions {
+			next := peek.add(direction)
+			if next.isNotAccess(maze) {
+				continue
+			}
+			//Assign a value to steps
+			steps[next.x][next.y] = steps[peek.x][peek.y] + 1
+			//Put into the queue
+			Q = append(Q, next)
+		}
+	}
+	return steps
+}
+
+// type robotPath struct {
+// 	success bool
+// 	route   map[point]string
+// }
+
+// var wHouse [][]string
+
+// func isValidCell(x, y int) bool {
+// 	if x < 0 || x >= len(wHouse) || y < 0 || y >= len(wHouse[0]) { // x строки, y столбцы
+// 		return false
+// 	} else {
+// 		if wHouse[x][y] == "#" || wHouse[x][y] == "A" || wHouse[x][y] == "B" {
+// 			return false
+// 		}
+// 	}
+// 	//fmt.Println("wHouse", wHouse)
+// 	return true
+
+// }
+
+// func shortPath(wHouse [][]string, start, end point) {
+// 	h := len(wHouse)
+// 	w := len(wHouse[0])
+// 	fmt.Println(h, w)
+// 	visit := make(map[point]bool) // карта для посещенных точек
+// 	queu := []point{start} // очередь из соседних точек
+
+// 	for len(queu) > 0 {
+// 		curren := queu[0] // FIFO zero index = first
+// 		fmt.Println("(THIS IS queu[0]:", queu[0])
+// 		queu = queu[1:] // оставшаяся очередь
+
+// 		if curren == end {
+// 			break
+// 		}
+
+// 		neighbo := []point{{curren.x - 1, curren.y}, {curren.x + 1, curren.y}, {curren.x, curren.y + 1}, {curren.x, curren.y - 1}}
+
+// 		for _,nei := range neighbo {
+// 			if isValidCell(nei.x, nei.y) && !visit[nei] {
+// 				visit[nei] = true
+// 				queu = append(queu, nei)
+// 			}
+// 		}
+// 	}
+// }
+
+// //Функция обхода в ширину (BFS)
+// func bfs(start, end point, name string) robotPath {
+// 	visited := make(map[point]bool) // карта для посещенных точек
+// 	queue := []point{start} // очередь из соседних точек
+// 	route := make(map[point]string)
+
+// 	for len(queue) > 0 {
+// 		current := queue[0]
+// 		queue = queue[1:]
+
+// 		if current == end {
+// 			return robotPath{true, route}
+// 		}
+
+// 		// Перемещаемся во все соседние клетки
+// 		neighbors := []point{{current.x - 1, current.y}, {current.x + 1, current.y}, {current.x, current.y - 1}, {current.x, current.y + 1}}
+// 		for _, neighbor := range neighbors {
+// 			if isValidCell(neighbor.x, neighbor.y) && !visited[neighbor] {
+// 				visited[neighbor] = true
+// 				queue = append(queue, neighbor)
+// 				route[neighbor] = name
+// 			}
+// 		}
+// 	}
+// 	return robotPath{false, nil}
+// }
