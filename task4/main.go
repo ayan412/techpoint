@@ -300,7 +300,8 @@ func changeMatrix(maze [][]string, steps [][]int) [][]string {
 			}
 		}
 	}
-	maze[2][3] = "b"
+	// Как прибавлять 1,1 к координатам для того чтобы печать путь в нижнем регистре
+	maze[3][4] = "b"
 	return maze
 }
 
