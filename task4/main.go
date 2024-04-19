@@ -78,8 +78,8 @@ func main() {
 		//fmt.Println("wH:", wHouse)
 
 		//Start walking the maze run
-		steps := run(wHouse, point{3, 4}, point{len(wHouse) - 1, len(wHouse[0]) - 1})
-
+		steps := run(wHouse, point{2, 3}, point{len(wHouse) - 1, len(wHouse[0]) - 1})
+		fmt.Println(steps)
 		//Give a path according to steps
 		wHouse = changeMatrix(wHouse, steps)
 
@@ -246,51 +246,61 @@ type point struct {
 }
 
 // Define the difference between the top, bottom, left, and right elements of the current element
-var directions = [4]point{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+var directions = [4]point{
+	{-1, 0}, 
+	{0,-1}, 
+	{1, 0}, 
+	{0, 1},
+}
 
-// Define the action of the next difference
+// увеличить значения координат смещением на одну позицию по гор-ти и вертикали, но как по какому принципу выбор в какое напр-е сначала идти???
 func (p point) add(direction point) point {
 	return point{p.x + direction.x, p.y + direction.y}
 }
 
 // Judging the situation where next cannot go: 1. Encounter obstacles, go out of the boundary 2. Have already gone through, can’t go back 3. Can’t go back in a circle
-func (next point) isNotAccess(maze [][]string) bool {
+func (next point) noAccess(steps [][]int, maze [][]string, start point) bool {
+	// касается промежуточной матрицы
 	if next.x < 0 || next.x >= len(maze) {
 		return true
 	}
 	if next.y < 0 || next.y >= len(maze) {
 		return true
 	}
+	// касается текущей матрицы
 	if maze[next.x][next.y] == "#" || maze[next.x][next.y] == "B" || maze[next.x][next.y] == "A" {
 		return true
 	}
-	// if steps[next.x][next.y] != "." {
-	// 	return true
-	// }
-	// в файле есть матрицы в которых это условие не нужно!!!!!!
-	// if next.x == start.x && next.y == start.y {
-	// 	return true
-	// }
-	return true
+	// ????
+	if steps[next.x][next.y] != 0 {
+		return true
+	}
+	//??? ЧТО ЭТО ПРОВЕРЯЕТ ????
+	if next.x == start.x && next.y == start.y {
+		return true
+	}
+	return false
 }
 
 // здесь в исходном примере из правого нижнего в левый верхний начинается поиск
 func changeMatrix(maze [][]string, steps [][]int) [][]string {
 	var current = point{len(maze) - 1, len(maze[0]) - 1}
-	var start = point{0, 0}
+	// CHANGE!!! должна браться координата любого робота !!!
+	var start = point{2, 3}
 	for current != start {
 		//Find the surrounding nodes, whether it is the value of the current node -1
 		for _, direction := range directions {
 			next := current.add(direction)
+			// ПОЧЕМУ вычитаем 1 ????!!!!
 			// Judge whether it is legal
-			if next.x >= 0 && next.x < len(maze) && next.y >= 0 && next.y < len(maze[0]) && steps[next.x][next.y] == steps[current.x][current.y] {
+			if next.x >= 0 && next.x < len(maze) && next.y >= 0 && next.y < len(maze[0]) && steps[next.x][next.y] == steps[current.x][current.y]-1 {
 				//Modify maze to 6
 				maze[current.x][current.y] = "b"
 				current = next
 			}
 		}
 	}
-	maze[0][0] = "b"
+	maze[2][3] = "b"
 	return maze
 }
 
@@ -314,10 +324,17 @@ func run(maze [][]string, start, end point) [][]int {
 		if peek == end {
 			break
 		}
-		//Take one step up, down, left, and right of the element to see if it works
+		//пытаемся найти соседей
 		for _, direction := range directions {
+			// коорд-тА соседА текущей точки с использ-ем смещения
 			next := peek.add(direction)
-			if next.isNotAccess(maze) {
+			/*
+			TRUE - переходит к следующей итерации цикла, независимо от какого-либо условия. 
+			Это может быть полезно, если вам нужно пропустить выполнение остальной части текущей итерации и перейти к следующей
+			FALSE - этот код фактически не делает ничего. 
+			Он игнорируется компилятором, потому что код внутри блока if никогда не будет выполнен из-за условия false.
+			*/
+			if next.noAccess(steps,maze,start) {
 				continue
 			}
 			//Assign a value to steps
