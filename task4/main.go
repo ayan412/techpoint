@@ -79,9 +79,9 @@ func main() {
 
 		//Start walking the maze run
 		steps := run(wHouse, point{2, 3}, point{len(wHouse) - 1, len(wHouse[0]) - 1})
-		fmt.Println(steps)
+
 		//Give a path according to steps
-		wHouse = changeMatrix(wHouse, steps)
+		wHouse = changeMatrix(wHouse, steps, "b", point{2, 3}, point{len(wHouse) - 1, len(wHouse[0]) - 1})
 
 		fmt.Println("steps:")
 		for x := range steps {
@@ -89,34 +89,15 @@ func main() {
 				fmt.Printf("%4d", steps[x][y])
 			}
 			fmt.Println()
-
-			fmt.Println("changed maze:")
-			for i := range wHouse {
-				for j := range wHouse[i] {
-					fmt.Printf("%s", wHouse[i][j])
-				}
-				fmt.Println()
-			}
 		}
-		//robotA := point{2, 3}
-		//robotB := Position{3, 4}
 
-		// pathA := bfs(robotA, point{0, 0}, "a")
-		// // := bfs(robotB, Position{len(allSlices[0]) - 1, len(allSlices[0][0]) - 1}, "b")
-
-		// for point, robot := range pathA.route {
-		// 	wHouse[point.x][point.y] = robot
-		// }
-
-		// // for point, robot := range pathB.route {
-		// // 	wHouse[point.x][point.y] = robot
-		// // }
-
-		// for _, row := range wHouse {
-		// 	fmt.Println("row", row)
-		// }
-
-		// shortPath(wHouse, robotA, point{0, 0})
+		fmt.Println("changed maze:")
+		for i := range wHouse {
+			for j := range wHouse[i] {
+				fmt.Printf("%s", wHouse[i][j])
+			}
+			fmt.Println()
+		}
 	}
 }
 
@@ -195,6 +176,7 @@ func readDim(rdr *bufio.Reader) [][]string {
 }
 
 func subtracPositions(result map[string][]int) {
+
 	// Извлекаем срезы для MAX, A и B
 	maxSlice := result["MAX"]
 	aSlice := result["A"]
@@ -233,190 +215,122 @@ func subtracPositions(result map[string][]int) {
 	} else {
 		// алгоритм по которому будет дописываться путь робота в точку MAX
 	}
-
 	// Выводим разность
 	//fmt.Println("Разность чисел между MAX и A:", resultASlice)
 	//fmt.Println("Разность чисел между MAX и B:", resultBSlice)
-
 }
 
-// Define the coordinate structure
+// Координаты вершины
 type point struct {
 	x, y int
 }
 
-// Define the difference between the top, bottom, left, and right elements of the current element
+// Смещение вверх, влево, вниз, вправо для определения соседей вершины
 var directions = [4]point{
-	{-1, 0}, 
-	{0,-1}, 
-	{1, 0}, 
+	{-1, 0},
+	{0, -1},
+	{1, 0},
 	{0, 1},
 }
 
-// увеличить значения координат смещением на одну позицию по гор-ти и вертикали, но как по какому принципу выбор в какое напр-е сначала идти???
+// Метод чтобы увеличить значения координаты смещением на одну позицию для координаты вершины
 func (p point) add(direction point) point {
 	return point{p.x + direction.x, p.y + direction.y}
 }
 
-// Judging the situation where next cannot go: 1. Encounter obstacles, go out of the boundary 2. Have already gone through, can’t go back 3. Can’t go back in a circle
+// Определение допустимых границ и условий для смещения/поиска соседей
 func (next point) noAccess(steps [][]int, maze [][]string, start point) bool {
-	// касается промежуточной матрицы
+	// координата соседней вершины - проверка на соот-ие границ
 	if next.x < 0 || next.x >= len(maze) {
 		return true
 	}
 	if next.y < 0 || next.y >= len(maze) {
 		return true
 	}
-	// касается текущей матрицы
+
+	// обход/пропуск вершины основной матрицы, если она содержит # и самих роботов на основе координат соседней вершины
 	if maze[next.x][next.y] == "#" || maze[next.x][next.y] == "B" || maze[next.x][next.y] == "A" {
 		return true
 	}
-	// ????
+	// Если промежуточная матрица не заполнена 0. !!! ЭТО ПОМОЖЕТ УЙТИ ОТ ПЕРЕСЕЧЕНИЯ???
 	if steps[next.x][next.y] != 0 {
 		return true
 	}
-	//??? ЧТО ЭТО ПРОВЕРЯЕТ ????
+	// Если коор-ы соседа совпадают со коор-ми робота из осн-й матрицы
 	if next.x == start.x && next.y == start.y {
 		return true
 	}
 	return false
 }
 
-// здесь в исходном примере из правого нижнего в левый верхний начинается поиск
-func changeMatrix(maze [][]string, steps [][]int) [][]string {
-	var current = point{len(maze) - 1, len(maze[0]) - 1}
-	// CHANGE!!! должна браться координата любого робота !!!
-	var start = point{2, 3}
-	for current != start {
+// Сборка матрицы с путями роботов
+func changeMatrix(maze [][]string, steps [][]int, robot string, start, end point) [][]string {
+	//Look up from the lower right corner, if it is less than 1, it is a path node
+	var cur = end
+	var st = start
+
+	for st != cur {
 		//Find the surrounding nodes, whether it is the value of the current node -1
 		for _, direction := range directions {
-			next := current.add(direction)
+			next := cur.add(direction)
 			// ПОЧЕМУ вычитаем 1 ????!!!!
-			// Judge whether it is legal
-			if next.x >= 0 && next.x < len(maze) && next.y >= 0 && next.y < len(maze[0]) && steps[next.x][next.y] == steps[current.x][current.y]-1 {
-				//Modify maze to 6
-				maze[current.x][current.y] = "b"
-				current = next
+			if next.x >= 0 && next.x < len(maze) && next.y >= 0 && next.y < len(maze[0]) &&
+				// поиск по совпадению (значение по коор-те минус 1)
+				steps[next.x][next.y] == steps[cur.x][cur.y]-1 {
+				// Заменяем на символ робота
+				maze[cur.x][cur.y] = robot
+				// Сдвигаем очередь???
+				cur = next
 			}
 		}
 	}
-	// Как прибавлять 1,1 к координатам для того чтобы печать путь в нижнем регистре
-	maze[3][4] = "b"
 	return maze
 }
 
 func run(maze [][]string, start, end point) [][]int {
-	//Generate steps matrix
+	// Иниц-я промеж-й матрицы с нулями на базе основной
 	steps := make([][]int, len(maze))
 	for i := range steps {
 		steps[i] = make([]int, len(maze[i]))
 	}
-	//Generate a queue and put the first node in the queue
+	// Очередь и отправка коор-т стартовой вершины
 	Q := []point{start}
 
-	//If the queue is not empty, it means there is no end
+	// Пока очередь не опустеет
 	for len(Q) > 0 {
-		//Remove the head element and delete it
-		peek := Q[0]
-		fmt.Println("Queue is:", Q)
-
+		// Работаем только с первым элементом из среза очереди
+		cur := Q[0]
+		fmt.Println("cur := Q[0]:", Q)
+		// И сразу обрезаем стартовый элемент из среза очереди, чтобы всегда работать с другим первым элементом
 		Q = Q[1:]
-
-		if peek == end {
+		fmt.Println("Q = Q[1:]", Q)
+		if cur == end {
 			break
 		}
-		//пытаемся найти соседей
+		// Обход координат соседних вершин
 		for _, direction := range directions {
 			// коорд-тА соседА текущей точки с использ-ем смещения
-			next := peek.add(direction)
+			// за раз обход только на одно смещение, а таких будет 4 в методе add
+			next := cur.add(direction)
+			fmt.Println("кордината next:", next)
 			/*
-			TRUE - переходит к следующей итерации цикла, независимо от какого-либо условия. 
-			Это может быть полезно, если вам нужно пропустить выполнение остальной части текущей итерации и перейти к следующей
-			FALSE - этот код фактически не делает ничего. 
-			Он игнорируется компилятором, потому что код внутри блока if никогда не будет выполнен из-за условия false.
+				TRUE - переходит к следующей итерации цикла, независимо от какого-либо условия.
+				Это может быть полезно, если нужно пропустить выполнение остальной части текущей итерации и перейти к следующей
+				FALSE - этот код фактически не делает ничего.
+				Он игнорируется компилятором, потому что код внутри блока if никогда не будет выполнен из-за условия false.
 			*/
-			if next.noAccess(steps,maze,start) {
+			// WHY continue?
+			if next.noAccess(steps, maze, start) {
 				continue
 			}
-			//Assign a value to steps
-			steps[next.x][next.y] = steps[peek.x][peek.y] + 1
-			//Put into the queue
+			// Если коор-А проходит условия, то присвоить по ней зн-е +1 в промеж-й матрице на базе тек-х коор-т, где везде нули.
+			steps[next.x][next.y] = steps[cur.x][cur.y] + 1
+
+			// Помещаем эту NEXT координату в очередь т.к. она соседняя с CUR
 			Q = append(Q, next)
+			fmt.Println("Q = append(Q, next)", Q)
 		}
 	}
+	// ?????VISITED нужен ли?????
 	return steps
 }
-
-// type robotPath struct {
-// 	success bool
-// 	route   map[point]string
-// }
-
-// var wHouse [][]string
-
-// func isValidCell(x, y int) bool {
-// 	if x < 0 || x >= len(wHouse) || y < 0 || y >= len(wHouse[0]) { // x строки, y столбцы
-// 		return false
-// 	} else {
-// 		if wHouse[x][y] == "#" || wHouse[x][y] == "A" || wHouse[x][y] == "B" {
-// 			return false
-// 		}
-// 	}
-// 	//fmt.Println("wHouse", wHouse)
-// 	return true
-
-// }
-
-// func shortPath(wHouse [][]string, start, end point) {
-// 	h := len(wHouse)
-// 	w := len(wHouse[0])
-// 	fmt.Println(h, w)
-// 	visit := make(map[point]bool) // карта для посещенных точек
-// 	queu := []point{start} // очередь из соседних точек
-
-// 	for len(queu) > 0 {
-// 		curren := queu[0] // FIFO zero index = first
-// 		fmt.Println("(THIS IS queu[0]:", queu[0])
-// 		queu = queu[1:] // оставшаяся очередь
-
-// 		if curren == end {
-// 			break
-// 		}
-
-// 		neighbo := []point{{curren.x - 1, curren.y}, {curren.x + 1, curren.y}, {curren.x, curren.y + 1}, {curren.x, curren.y - 1}}
-
-// 		for _,nei := range neighbo {
-// 			if isValidCell(nei.x, nei.y) && !visit[nei] {
-// 				visit[nei] = true
-// 				queu = append(queu, nei)
-// 			}
-// 		}
-// 	}
-// }
-
-// //Функция обхода в ширину (BFS)
-// func bfs(start, end point, name string) robotPath {
-// 	visited := make(map[point]bool) // карта для посещенных точек
-// 	queue := []point{start} // очередь из соседних точек
-// 	route := make(map[point]string)
-
-// 	for len(queue) > 0 {
-// 		current := queue[0]
-// 		queue = queue[1:]
-
-// 		if current == end {
-// 			return robotPath{true, route}
-// 		}
-
-// 		// Перемещаемся во все соседние клетки
-// 		neighbors := []point{{current.x - 1, current.y}, {current.x + 1, current.y}, {current.x, current.y - 1}, {current.x, current.y + 1}}
-// 		for _, neighbor := range neighbors {
-// 			if isValidCell(neighbor.x, neighbor.y) && !visited[neighbor] {
-// 				visited[neighbor] = true
-// 				queue = append(queue, neighbor)
-// 				route[neighbor] = name
-// 			}
-// 		}
-// 	}
-// 	return robotPath{false, nil}
-// }
