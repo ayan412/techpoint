@@ -300,12 +300,14 @@ func run(maze [][]string, start, end point) [][]int {
 	for len(Q) > 0 {
 		// Работаем только с первым элементом из среза очереди
 		cur := Q[0]
-		fmt.Println("cur := Q[0]:", Q)
+		fmt.Println("cur := Q[0]:", cur)
 		// И сразу обрезаем стартовый элемент из среза очереди, чтобы всегда работать с другим первым элементом
 		Q = Q[1:]
 		fmt.Println("Q = Q[1:]", Q)
+		
+		// Чтобы сократить время обработки - break
 		if cur == end {
-			break
+			continue
 		}
 		// Обход координат соседних вершин
 		for _, direction := range directions {
