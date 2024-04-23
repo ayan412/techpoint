@@ -64,6 +64,8 @@ func main() {
 		outWrite := bufio.NewWriter(writeOutFile(i))
 		defer outWrite.Flush()
 
+		//subtracPositions(result)
+		
 		allSlices := make([][][]string, numOfSetsInt)
 		for j := 1; j <= numOfSetsInt; j++ {
 			allSlices[j-1] = readDim(rdr)
@@ -76,6 +78,47 @@ func main() {
 
 		wHouse := allSlices[0]
 		//fmt.Println("wH:", wHouse)
+
+		maxSlice := result["MAX"]
+		aSlice := result["A"]
+		bSlice := result["B"]
+
+		// Срез для хранения разности чисел между MAX и A
+		resultASlice := []int{}
+
+		// Разность чисел между MAX и A
+		for i := 0; i < len(maxSlice); i++ {
+			resultASlice = append(resultASlice, maxSlice[i]-aSlice[i])
+		}
+
+		// Срез для хранения разности чисел между MAX и B
+		resultBSlice := []int{}
+
+		// Разность чисел между MAX и B
+		for i := 0; i < len(maxSlice); i++ {
+			resultBSlice = append(resultBSlice, maxSlice[i]-bSlice[i])
+		}
+		// Сумма разницы чисел между МАХ и А
+		sumA := 0
+		for i := 0; i < len(resultASlice); i++ {
+			sumA += resultASlice[i]
+		}
+		//fmt.Println("len A", sumA)
+		// Сумма разницы чисел между МАХ и В
+		sumB := 0
+		for i := 0; i < len(resultBSlice); i++ {
+			sumB += resultBSlice[i]
+		}
+		//fmt.Println("len B", sumB)
+		if sumA > sumB {
+			// алгоритм по которому будет дописываться путь робота в точку 0;0
+
+		} else {
+			// алгоритм по которому будет дописываться путь робота в точку MAX
+		}
+		// Выводим разность
+		//fmt.Println("Разность чисел между MAX и A:", resultASlice)
+		//fmt.Println("Разность чисел между MAX и B:", resultBSlice)
 
 		//Start walking the maze run
 		steps := run(wHouse, point{2, 3}, point{len(wHouse) - 1, len(wHouse[0]) - 1})
@@ -99,9 +142,9 @@ func main() {
 			fmt.Println()
 		}
 
-		steps = run(wHouse, point{1, 2}, point{0,0})
+		steps = run(wHouse, point{1, 2}, point{0, 0})
 
-		wHouse1 := changeMatrix(wHouse, steps, "a", point{1, 2}, point{0,0})
+		wHouse1 := changeMatrix(wHouse, steps, "a", point{1, 2}, point{0, 0})
 
 		fmt.Println("steps:")
 		for x := range steps {
@@ -134,6 +177,8 @@ func checkDim(numbersStr []string) (vertic, horizon int) {
 	return verticalDim, horizontalDim
 }
 
+var result = make(map[string][]int)
+
 func readDim(rdr *bufio.Reader) [][]string {
 
 	// Получение размеров склада: строки и столбцы склада
@@ -157,6 +202,7 @@ func readDim(rdr *bufio.Reader) [][]string {
 	//fmt.Println("строки и столбцы:", verticDim, horizonDim)
 	mdArray[0][0] = verticDim
 	mdArray[0][1] = horizonDim
+	fmt.Print(mdArray)
 	result["MAX"] = mdArray[0][:]
 
 	// Срез (из кол-ва рядов) срезов - [[] [] [] [] [] [] []]
@@ -191,54 +237,56 @@ func readDim(rdr *bufio.Reader) [][]string {
 	result["B"] = mdArray[2][:]
 	fmt.Println(result)
 
-	subtracPositions(result)
+	//subtracPositions(result)
+	fmt.Println(mdArray)
+	fmt.Println(matrix)
 	return matrix
 }
 
-func subtracPositions(result map[string][]int) {
+// func subtracPositions(result map[string][]int) {
 
-	// Извлекаем срезы для MAX, A и B
-	maxSlice := result["MAX"]
-	aSlice := result["A"]
-	bSlice := result["B"]
+// 	// Извлекаем срезы для MAX, A и B
+// 	maxSlice := result["MAX"]
+// 	aSlice := result["A"]
+// 	bSlice := result["B"]
 
-	// Срез для хранения разности чисел между MAX и A
-	resultASlice := []int{}
+// 	// Срез для хранения разности чисел между MAX и A
+// 	resultASlice := []int{}
 
-	// Разность чисел между MAX и A
-	for i := 0; i < len(maxSlice); i++ {
-		resultASlice = append(resultASlice, maxSlice[i]-aSlice[i])
-	}
+// 	// Разность чисел между MAX и A
+// 	for i := 0; i < len(maxSlice); i++ {
+// 		resultASlice = append(resultASlice, maxSlice[i]-aSlice[i])
+// 	}
 
-	// Срез для хранения разности чисел между MAX и B
-	resultBSlice := []int{}
+// 	// Срез для хранения разности чисел между MAX и B
+// 	resultBSlice := []int{}
 
-	// Разность чисел между MAX и B
-	for i := 0; i < len(maxSlice); i++ {
-		resultBSlice = append(resultBSlice, maxSlice[i]-bSlice[i])
-	}
-	// Сумма разницы чисел между МАХ и А
-	sumA := 0
-	for i := 0; i < len(resultASlice); i++ {
-		sumA += resultASlice[i]
-	}
-	//fmt.Println("len A", sumA)
-	// Сумма разницы чисел между МАХ и В
-	sumB := 0
-	for i := 0; i < len(resultBSlice); i++ {
-		sumB += resultBSlice[i]
-	}
-	//fmt.Println("len B", sumB)
-	if sumA > sumB {
-		// алгоритм по которому будет дописываться путь робота в точку 0;0
+// 	// Разность чисел между MAX и B
+// 	for i := 0; i < len(maxSlice); i++ {
+// 		resultBSlice = append(resultBSlice, maxSlice[i]-bSlice[i])
+// 	}
+// 	// Сумма разницы чисел между МАХ и А
+// 	sumA := 0
+// 	for i := 0; i < len(resultASlice); i++ {
+// 		sumA += resultASlice[i]
+// 	}
+// 	//fmt.Println("len A", sumA)
+// 	// Сумма разницы чисел между МАХ и В
+// 	sumB := 0
+// 	for i := 0; i < len(resultBSlice); i++ {
+// 		sumB += resultBSlice[i]
+// 	}
+// 	//fmt.Println("len B", sumB)
+// 	if sumA > sumB {
+// 		// алгоритм по которому будет дописываться путь робота в точку 0;0
 
-	} else {
-		// алгоритм по которому будет дописываться путь робота в точку MAX
-	}
-	// Выводим разность
-	//fmt.Println("Разность чисел между MAX и A:", resultASlice)
-	//fmt.Println("Разность чисел между MAX и B:", resultBSlice)
-}
+// 	} else {
+// 		// алгоритм по которому будет дописываться путь робота в точку MAX
+// 	}
+// 	// Выводим разность
+// 	//fmt.Println("Разность чисел между MAX и A:", resultASlice)
+// 	//fmt.Println("Разность чисел между MAX и B:", resultBSlice)
+// }
 
 // Координаты вершины
 type point struct {
