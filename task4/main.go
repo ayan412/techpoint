@@ -98,6 +98,26 @@ func main() {
 			}
 			fmt.Println()
 		}
+
+		steps = run(wHouse, point{1, 2}, point{0,0})
+
+		wHouse1 := changeMatrix(wHouse, steps, "a", point{1, 2}, point{0,0})
+
+		fmt.Println("steps:")
+		for x := range steps {
+			for y := range steps[i] {
+				fmt.Printf("%4d", steps[x][y])
+			}
+			fmt.Println()
+		}
+
+		fmt.Println("changed maze:")
+		for i := range wHouse1 {
+			for j := range wHouse1[i] {
+				fmt.Printf("%s", wHouse1[i][j])
+			}
+			fmt.Println()
+		}
 	}
 }
 
@@ -252,8 +272,8 @@ func (next point) noAccess(steps [][]int, maze [][]string, start point) bool {
 	if maze[next.x][next.y] == "#" || maze[next.x][next.y] == "B" || maze[next.x][next.y] == "A" {
 		return true
 	}
-	// Если промежуточная матрица не заполнена 0. Аналогично VISITED.
-	if steps[next.x][next.y] != 0 {
+	// Если промежуточная матрица не заполнена 0, что гарантирует избежание повторения одних и тех же точек. Аналогично VISITED.
+	if steps[next.x][next.y] != -1 {
 		return true
 	}
 	// Если коор-ы соседа совпадают со коор-ми робота из осн-й матрицы
@@ -293,6 +313,12 @@ func run(maze [][]string, start, end point) [][]int {
 	for i := range steps {
 		steps[i] = make([]int, len(maze[i]))
 	}
+
+	for i := range steps {
+		for j := range steps[i] {
+			steps[i][j] = -1
+		}
+	}
 	// Очередь и отправка коор-т стартовой вершины
 	Q := []point{start}
 
@@ -300,10 +326,10 @@ func run(maze [][]string, start, end point) [][]int {
 	for len(Q) > 0 {
 		// Работаем только с первым элементом из среза очереди
 		cur := Q[0]
-		fmt.Println("cur := Q[0]:", cur)
+		//fmt.Println("cur := Q[0]:", cur)
 		// И сразу обрезаем стартовый элемент из среза очереди, чтобы всегда работать с другим первым элементом
 		Q = Q[1:]
-		fmt.Println("Q = Q[1:]", Q)
+		//fmt.Println("Q = Q[1:]", Q)
 
 		// Чтобы сократить время обработки - break
 		if cur == end {
@@ -314,7 +340,7 @@ func run(maze [][]string, start, end point) [][]int {
 			// коорд-тА соседА текущей точки с использ-ем смещения
 			// за раз обход только на одно смещение, а таких будет 4 в методе add
 			next := cur.add(direction)
-			fmt.Println("координата next:", next)
+			//fmt.Println("координата next:", next)
 			/*
 				TRUE - переходит к следующей итерации цикла, независимо от какого-либо условия.
 				Это может быть полезно, если нужно пропустить выполнение остальной части текущей итерации и перейти к следующей
@@ -330,9 +356,9 @@ func run(maze [][]string, start, end point) [][]int {
 
 			// Помещаем эту NEXT координату в очередь т.к. она соседняя с CUR
 			Q = append(Q, next)
-			fmt.Println("Q = append(Q, next)", Q)
+			//fmt.Println("Q = append(Q, next)", Q)
 		}
 	}
-	// ?????VISITED нужен ли?????
+	// VISITED отрабатывается в noAccess func: if steps[next.x][next.y] != 0
 	return steps
 }
