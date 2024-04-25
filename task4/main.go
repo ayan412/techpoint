@@ -4,7 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"reflect"
+
+	//	"reflect"
 	"strconv"
 	"strings"
 )
@@ -13,6 +14,8 @@ const (
 	filePath       string = "./63_4/"   // Каталог, содержащий входные файлы
 	outputFilePath string = "./output/" // Каталог, в который будут записываться выходные файлы
 )
+
+var result = make(map[string][]int)
 
 // Функция для создания выходного файла
 func writeOutFile(iter int) *os.File {
@@ -65,103 +68,164 @@ func main() {
 		defer outWrite.Flush()
 
 		//subtracPositions(result)
-		
+
 		allSlices := make([][][]string, numOfSetsInt)
 		for j := 1; j <= numOfSetsInt; j++ {
 			allSlices[j-1] = readDim(rdr)
-		}
+			wHouse := allSlices[j-1]
+			fmt.Println("wH:", wHouse)
 
-		fmt.Println("reflect wHouse:", reflect.TypeOf(allSlices[0]))
-		//fmt.Println(len(allSlices[0][0]))
-		//fmt.Println(allSlices[0][0])
-		//fmt.Println(allSlices[0])
+			maxSlice := result["MAX"]
+			aSlice := result["A"]
+			bSlice := result["B"]
 
-		wHouse := allSlices[0]
-		//fmt.Println("wH:", wHouse)
+			var robotA, robotB, end point
+			robotA.x = aSlice[0] - 1
+			robotA.y = aSlice[1] - 1
 
-		maxSlice := result["MAX"]
-		aSlice := result["A"]
-		bSlice := result["B"]
+			robotB.x = bSlice[0] - 1
+			robotB.y = bSlice[1] - 1
 
-		// Срез для хранения разности чисел между MAX и A
-		resultASlice := []int{}
+			end.x = maxSlice[0] - 1
+			end.y = maxSlice[1] - 1
 
-		// Разность чисел между MAX и A
-		for i := 0; i < len(maxSlice); i++ {
-			resultASlice = append(resultASlice, maxSlice[i]-aSlice[i])
-		}
+			fmt.Printf("%v%v%v\n", aSlice, bSlice, maxSlice)
 
-		// Срез для хранения разности чисел между MAX и B
-		resultBSlice := []int{}
+			fmt.Println("robots:", robotA, robotB)
 
-		// Разность чисел между MAX и B
-		for i := 0; i < len(maxSlice); i++ {
-			resultBSlice = append(resultBSlice, maxSlice[i]-bSlice[i])
-		}
-		// Сумма разницы чисел между МАХ и А
-		sumA := 0
-		for i := 0; i < len(resultASlice); i++ {
-			sumA += resultASlice[i]
-		}
-		//fmt.Println("len A", sumA)
-		// Сумма разницы чисел между МАХ и В
-		sumB := 0
-		for i := 0; i < len(resultBSlice); i++ {
-			sumB += resultBSlice[i]
-		}
-		//fmt.Println("len B", sumB)
-		if sumA > sumB {
-			// алгоритм по которому будет дописываться путь робота в точку 0;0
+			// Срез для хранения разности чисел между MAX и A
+			resultASlice := []int{}
 
-		} else {
-			// алгоритм по которому будет дописываться путь робота в точку MAX
-		}
-		// Выводим разность
-		//fmt.Println("Разность чисел между MAX и A:", resultASlice)
-		//fmt.Println("Разность чисел между MAX и B:", resultBSlice)
-
-		//Start walking the maze run
-		steps := run(wHouse, point{2, 3}, point{len(wHouse) - 1, len(wHouse[0]) - 1})
-
-		//Give a path according to steps
-		wHouse = changeMatrix(wHouse, steps, "b", point{2, 3}, point{len(wHouse) - 1, len(wHouse[0]) - 1})
-
-		fmt.Println("steps:")
-		for x := range steps {
-			for y := range steps[i] {
-				fmt.Printf("%4d", steps[x][y])
+			// Разность чисел между MAX и A
+			for i := 0; i < len(maxSlice); i++ {
+				resultASlice = append(resultASlice, maxSlice[i]-aSlice[i])
 			}
-			fmt.Println()
-		}
 
-		fmt.Println("changed maze:")
-		for i := range wHouse {
-			for j := range wHouse[i] {
-				fmt.Printf("%s", wHouse[i][j])
+			// Срез для хранения разности чисел между MAX и B
+			resultBSlice := []int{}
+
+			// Разность чисел между MAX и B
+			for i := 0; i < len(maxSlice); i++ {
+				resultBSlice = append(resultBSlice, maxSlice[i]-bSlice[i])
 			}
-			fmt.Println()
-		}
-
-		steps = run(wHouse, point{1, 2}, point{0, 0})
-
-		wHouse1 := changeMatrix(wHouse, steps, "a", point{1, 2}, point{0, 0})
-
-		fmt.Println("steps:")
-		for x := range steps {
-			for y := range steps[i] {
-				fmt.Printf("%4d", steps[x][y])
+			// Сумма разницы чисел между МАХ и А
+			sumA := 0
+			for i := 0; i < len(resultASlice); i++ {
+				sumA += resultASlice[i]
 			}
-			fmt.Println()
-		}
-
-		fmt.Println("changed maze:")
-		for i := range wHouse1 {
-			for j := range wHouse1[i] {
-				fmt.Printf("%s", wHouse1[i][j])
+			fmt.Println("len A:", sumA)
+			// Сумма разницы чисел между МАХ и В
+			sumB := 0
+			for i := 0; i < len(resultBSlice); i++ {
+				sumB += resultBSlice[i]
 			}
-			fmt.Println()
+			fmt.Println("len B:", sumB)
+
+			switch {
+
+			case sumA > sumB:
+				{
+					// алгоритм по которому будет дописываться путь робота A к 0; B к MAX
+					//Start walking the maze run
+					steps := run(wHouse, robotB, end)
+
+					//Give a path according to steps
+					wHouse = changeMatrix(wHouse, steps, "b", robotB, end)
+
+					fmt.Println("steps:")
+					for x := range steps {
+						for y := range steps[i] {
+							fmt.Printf("%4d", steps[x][y])
+						}
+						fmt.Println()
+					}
+
+					fmt.Println("changed maze:")
+					for i := range wHouse {
+						for j := range wHouse[i] {
+							fmt.Printf("%s", wHouse[i][j])
+						}
+						fmt.Println()
+					}
+
+					steps = run(wHouse, robotA, point{0, 0})
+
+					wHouse1 := changeMatrix(wHouse, steps, "a", robotA, point{0, 0})
+
+					fmt.Println("steps:")
+					for x := range steps {
+						for y := range steps[i] {
+							fmt.Printf("%4d", steps[x][y])
+						}
+						fmt.Println()
+					}
+
+					fmt.Println("changed maze:")
+					for i := range wHouse1 {
+						for j := range wHouse1[i] {
+							fmt.Printf("%s", wHouse1[i][j])
+						}
+						fmt.Println()
+					}
+
+				}
+
+			case sumB > sumA:
+
+				{
+					// алгоритм по которому будет дописываться путь робота B к 0; А к МАХ
+					//Start walking the maze run
+					steps := run(wHouse, robotA, end)
+
+					//Give a path according to steps
+					wHouse = changeMatrix(wHouse, steps, "a", robotA, end)
+
+					fmt.Println("steps:")
+					for x := range steps {
+						for y := range steps[i] {
+							fmt.Printf("%4d", steps[x][y])
+						}
+						fmt.Println()
+					}
+
+					fmt.Println("changed maze:")
+					for i := range wHouse {
+						for j := range wHouse[i] {
+							fmt.Printf("%s", wHouse[i][j])
+						}
+						fmt.Println()
+					}
+
+					steps = run(wHouse, robotB, point{0, 0})
+
+					wHouse1 := changeMatrix(wHouse, steps, "b", robotB, point{0, 0})
+
+					fmt.Println("steps:")
+					for x := range steps {
+						for y := range steps[i] {
+							fmt.Printf("%4d", steps[x][y])
+						}
+						fmt.Println()
+					}
+
+					fmt.Println("changed maze:")
+					for i := range wHouse1 {
+						for j := range wHouse1[i] {
+							fmt.Printf("%s", wHouse1[i][j])
+						}
+						fmt.Println()
+					}
+				}
+
+			}
+
+			// Выводим разность
+			// fmt.Println("Разность чисел между MAX и A:", resultASlice)
+			// fmt.Println("Разность чисел между MAX и B:", resultBSlice)
+
 		}
 	}
+
 }
 
 func checkDim(numbersStr []string) (vertic, horizon int) {
@@ -176,8 +240,6 @@ func checkDim(numbersStr []string) (vertic, horizon int) {
 
 	return verticalDim, horizontalDim
 }
-
-var result = make(map[string][]int)
 
 func readDim(rdr *bufio.Reader) [][]string {
 
@@ -196,13 +258,13 @@ func readDim(rdr *bufio.Reader) [][]string {
 
 	// считываем и выводим только размеры нужного склада в зав-ти от длины его строк
 	var mdArray [3][2]int
-	result := make(map[string][]int)
+	//result := make(map[string][]int)
 
 	verticDim, horizonDim := checkDim(numbersStr)
 	//fmt.Println("строки и столбцы:", verticDim, horizonDim)
 	mdArray[0][0] = verticDim
 	mdArray[0][1] = horizonDim
-	fmt.Print(mdArray)
+	//fmt.Print(mdArray)
 	result["MAX"] = mdArray[0][:]
 
 	// Срез (из кол-ва рядов) срезов - [[] [] [] [] [] [] []]
@@ -235,11 +297,11 @@ func readDim(rdr *bufio.Reader) [][]string {
 
 	result["A"] = mdArray[1][:]
 	result["B"] = mdArray[2][:]
-	fmt.Println(result)
+	//fmt.Println("result:",result)
 
 	//subtracPositions(result)
-	fmt.Println(mdArray)
-	fmt.Println(matrix)
+	//fmt.Println(mdArray)
+	//fmt.Println(matrix)
 	return matrix
 }
 
