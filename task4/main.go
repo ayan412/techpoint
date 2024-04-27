@@ -125,12 +125,13 @@ func main() {
 
 			case sumA > sumB:
 				{
+					fmt.Println("sumA > sumB")
 					// алгоритм по которому будет дописываться путь робота A к 0; B к MAX
 					//Start walking the maze run
-					steps := run(wHouse, robotB, end)
+					steps := run(wHouse, robotA, point{0, 0})
 
 					//Give a path according to steps
-					wHouse = changeMatrix(wHouse, steps, "b", robotB, end)
+					wHouse = changeMatrix(wHouse, steps, "a", robotA, point{0, 0})
 
 					fmt.Println("steps:")
 					for x := range steps {
@@ -148,9 +149,9 @@ func main() {
 						fmt.Println()
 					}
 
-					steps = run(wHouse, robotA, point{0, 0})
+					steps = run(wHouse, robotB, end)
 
-					wHouse1 := changeMatrix(wHouse, steps, "a", robotA, point{0, 0})
+					wHouse1 := changeMatrix(wHouse, steps, "b", robotB, end)
 
 					fmt.Println("steps:")
 					for x := range steps {
@@ -173,6 +174,7 @@ func main() {
 			case sumB > sumA:
 
 				{
+					fmt.Println("sumB > sumA")
 					// алгоритм по которому будет дописываться путь робота B к 0; А к МАХ
 					//Start walking the maze run
 					steps := run(wHouse, robotA, end)
@@ -383,7 +385,7 @@ func (next point) noAccess(steps [][]int, maze [][]string, start point) bool {
 		return true
 	}
 	// Если промежуточная матрица не заполнена 0, что гарантирует избежание повторения одних и тех же точек. Аналогично VISITED.
-	if steps[next.x][next.y] != -1 {
+	if steps[next.x][next.y] != 0 {
 		return true
 	}
 	// Если коор-ы соседа совпадают со коор-ми робота из осн-й матрицы
@@ -398,22 +400,24 @@ func changeMatrix(maze [][]string, steps [][]int, robot string, start, end point
 	//Look up from the lower right corner, if it is less than 1, it is a path node
 	var cur = end
 	var st = start
+	var next point 
 
-	for st != cur {
-		//Find the surrounding nodes, whether it is the value of the current node -1
+	for cur != st {
+		//Начинаем искать с конца до робота
 		for _, direction := range directions {
-			next := cur.add(direction)
-			// ПОЧЕМУ вычитаем 1 ????!!!!
+			next = cur.add(direction)
+			// Отнимаем 1, чтобы найти "соседнюю" точку, которая находится ближе к началу пути
 			if next.x >= 0 && next.x < len(maze) && next.y >= 0 && next.y < len(maze[0]) &&
-				// поиск по совпадению (значение по коор-те минус 1)
-				steps[next.x][next.y] == steps[cur.x][cur.y]-1 {
-				// Заменяем на символ робота
+				// значение по коор-м next = зн-ю по тек-м коор-м т.е. 
+				steps[next.x][next.y] == steps[cur.x][cur.y]-1 && maze[next.x][next.y] != "#" {
+				// Заменяем на символ робота в ориг-й матрице
 				maze[cur.x][cur.y] = robot
-				// Сдвигаем очередь???
+				// Текущей коор-й становится next
 				cur = next
 			}
 		}
 	}
+	fmt.Println("end of CHANGE FUNC")
 	return maze
 }
 
@@ -424,11 +428,12 @@ func run(maze [][]string, start, end point) [][]int {
 		steps[i] = make([]int, len(maze[i]))
 	}
 
-	for i := range steps {
-		for j := range steps[i] {
-			steps[i][j] = -1
-		}
-	}
+	// for i := range steps {
+	// 	for j := range steps[i] {
+	// 		steps[i][j] = 0
+	// 	}
+	// }
+	fmt.Println(steps)
 	// Очередь и отправка коор-т стартовой вершины
 	Q := []point{start}
 
@@ -461,7 +466,7 @@ func run(maze [][]string, start, end point) [][]int {
 			if next.noAccess(steps, maze, start) {
 				continue
 			}
-			// Если коор-А проходит условия, то присвоить по ней зн-е +1 в промеж-й матрице на базе тек-х коор-т, где везде нули.
+			// Если коор-А проходит условия, то присвоить по ней зн-е +1 в промеж-й матрице на базе тек-х коор-т, где везде -1.
 			steps[next.x][next.y] = steps[cur.x][cur.y] + 1
 
 			// Помещаем эту NEXT координату в очередь т.к. она соседняя с CUR
@@ -469,6 +474,7 @@ func run(maze [][]string, start, end point) [][]int {
 			//fmt.Println("Q = append(Q, next)", Q)
 		}
 	}
+	fmt.Println("end of RUN FUNC")
 	// VISITED отрабатывается в noAccess func: if steps[next.x][next.y] != 0
 	return steps
 }
