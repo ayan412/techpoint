@@ -35,8 +35,8 @@ func main() {
 	// Переменная для хранения пути к текущему файлу
 	var filePathFull string
 
-	// Цикл для обработки каждого файла в каталоге "59_3"
-	for i := 1; i <= 1; i++ {
+	// Цикл для обработки каждого файла в каталоге "63_4"
+	for i := 2; i <= 2; i++ {
 		iStr := strconv.Itoa(i)
 		// Путь до файла
 		filePathFull = fmt.Sprintf("%s%s", filePath, iStr)
@@ -184,16 +184,16 @@ func main() {
 
 					fmt.Println("steps:")
 					for x := range steps {
-						for y := range steps[i] {
+						for y := range steps[x] {
 							fmt.Printf("%4d", steps[x][y])
 						}
 						fmt.Println()
 					}
 
 					fmt.Println("changed maze:")
-					for i := range wHouse {
-						for j := range wHouse[i] {
-							fmt.Printf("%s", wHouse[i][j])
+					for x := range wHouse {
+						for y := range wHouse[x] {
+							fmt.Printf("%s", wHouse[x][y])
 						}
 						fmt.Println()
 					}
@@ -204,16 +204,16 @@ func main() {
 
 					fmt.Println("steps:")
 					for x := range steps {
-						for y := range steps[i] {
+						for y := range steps[x] {
 							fmt.Printf("%4d", steps[x][y])
 						}
 						fmt.Println()
 					}
 
 					fmt.Println("changed maze:")
-					for i := range wHouse1 {
-						for j := range wHouse1[i] {
-							fmt.Printf("%s", wHouse1[i][j])
+					for x := range wHouse1 {
+						for y := range wHouse1[x] {
+							fmt.Printf("%s", wHouse1[x][y])
 						}
 						fmt.Println()
 					}
@@ -412,9 +412,13 @@ func changeMatrix(maze [][]string, steps [][]int, robot string, start, end point
 				steps[next.x][next.y] == steps[cur.x][cur.y]-1 && maze[next.x][next.y] != "#" {
 				// Заменяем на символ робота в ориг-й матрице
 				maze[cur.x][cur.y] = robot
+				// if maze[next.x][next.y] == "A" ||  maze[next.x][next.y] == "B" {
+				// 	break
+				// }
 				// Текущей коор-й становится next
 				cur = next
 			}
+			
 		}
 	}
 	fmt.Println("end of CHANGE FUNC")
@@ -446,9 +450,9 @@ func run(maze [][]string, start, end point) [][]int {
 		Q = Q[1:]
 		//fmt.Println("Q = Q[1:]", Q)
 
-		// Чтобы сократить время обработки - break
+		// !!! continue нужен чтобы не было лишних нулей на местах точек, иначе (break) строить обратный маршрут будет в бесконечном цикле
 		if cur == end {
-			break
+			continue
 		}
 		// Обход координат соседних вершин
 		for _, direction := range directions {
