@@ -376,7 +376,7 @@ func (next point) noAccess(steps [][]int, maze [][]string, start point) bool {
 	if next.x < 0 || next.x >= len(maze) {
 		return true
 	}
-	if next.y < 0 || next.y >= len(maze) {
+	if next.y < 0 || next.y >= len(maze[0]) {
 		return true
 	}
 
@@ -400,7 +400,7 @@ func changeMatrix(maze [][]string, steps [][]int, robot string, start, end point
 	//Look up from the lower right corner, if it is less than 1, it is a path node
 	var cur = end
 	var st = start
-	var next point 
+	var next point
 
 	for cur != st {
 		//Начинаем искать с конца до робота
@@ -408,7 +408,7 @@ func changeMatrix(maze [][]string, steps [][]int, robot string, start, end point
 			next = cur.add(direction)
 			// Отнимаем 1, чтобы найти "соседнюю" точку, которая находится ближе к началу пути
 			if next.x >= 0 && next.x < len(maze) && next.y >= 0 && next.y < len(maze[0]) &&
-				// значение по коор-м next = зн-ю по тек-м коор-м т.е. 
+				// значение по коор-м next = зн-ю по тек-м коор-м т.е.
 				steps[next.x][next.y] == steps[cur.x][cur.y]-1 && maze[next.x][next.y] != "#" {
 				// Заменяем на символ робота в ориг-й матрице
 				maze[cur.x][cur.y] = robot
@@ -464,6 +464,7 @@ func run(maze [][]string, start, end point) [][]int {
 			*/
 			// WHY continue?
 			if next.noAccess(steps, maze, start) {
+				//steps[next.x][next.y] = 0
 				continue
 			}
 			// Если коор-А проходит условия, то присвоить по ней зн-е +1 в промеж-й матрице на базе тек-х коор-т, где везде -1.
