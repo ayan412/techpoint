@@ -36,7 +36,7 @@ func main() {
 	var filePathFull string
 
 	// Цикл для обработки каждого файла в каталоге "63_4"
-	for i := 2; i <= 2; i++ {
+	for i := 1; i <= 5; i++ {
 		iStr := strconv.Itoa(i)
 		// Путь до файла
 		filePathFull = fmt.Sprintf("%s%s", filePath, iStr)
@@ -135,7 +135,7 @@ func main() {
 
 					fmt.Println("steps:")
 					for x := range steps {
-						for y := range steps[i] {
+						for y := range steps[x] {
 							fmt.Printf("%4d", steps[x][y])
 						}
 						fmt.Println()
@@ -155,16 +155,16 @@ func main() {
 
 					fmt.Println("steps:")
 					for x := range steps {
-						for y := range steps[i] {
+						for y := range steps[x] {
 							fmt.Printf("%4d", steps[x][y])
 						}
 						fmt.Println()
 					}
 
 					fmt.Println("changed maze:")
-					for i := range wHouse1 {
-						for j := range wHouse1[i] {
-							fmt.Printf("%s", wHouse1[i][j])
+					for x := range wHouse1 {
+						for y := range wHouse1[x] {
+							fmt.Printf("%s", wHouse1[x][y])
 						}
 						fmt.Println()
 					}
@@ -402,8 +402,25 @@ func changeMatrix(maze [][]string, steps [][]int, robot string, start, end point
 	var st = start
 	var next point
 
+	stopFor := false
+
 	for cur != st {
 		//Начинаем искать с конца до робота
+		if steps[cur.x][cur.y] == 1 {
+			for _, direction := range directions {
+				next = cur.add(direction)
+				if next == st {
+					maze[cur.x][cur.y] = robot
+					stopFor = true
+					break 
+				}
+			}
+		}
+		
+		if stopFor {
+			break
+		}
+
 		for _, direction := range directions {
 			next = cur.add(direction)
 			// Отнимаем 1, чтобы найти "соседнюю" точку, которая находится ближе к началу пути
@@ -418,7 +435,6 @@ func changeMatrix(maze [][]string, steps [][]int, robot string, start, end point
 				// Текущей коор-й становится next
 				cur = next
 			}
-			
 		}
 	}
 	fmt.Println("end of CHANGE FUNC")
