@@ -36,7 +36,7 @@ func main() {
 	var filePathFull string
 
 	// Цикл для обработки каждого файла в каталоге "63_4"
-	for i := 1; i <= 1; i++ {
+	for i := 17; i <= 17; i++ {
 		iStr := strconv.Itoa(i)
 		// Путь до файла
 		filePathFull = fmt.Sprintf("%s%s", filePath, iStr)
@@ -377,11 +377,10 @@ func changeMatrix(maze [][]string, steps [][]int, robot string, start, end point
 				steps[next.x][next.y] == steps[cur.x][cur.y]-1 && maze[next.x][next.y] != "#" {
 				// Заменяем на символ робота в ориг-й матрице
 				maze[cur.x][cur.y] = robot
-				// if maze[next.x][next.y] == "A" ||  maze[next.x][next.y] == "B" {
-				// 	break
-				// }
+
 				// Текущей коор-й становится next
 				cur = next
+				break // ОЧЕНЬ ВАЖНОЕ УСЛОВИЕ ЧТОБЫ НЕ БЫЛО ЛИШНИХ ЗИГЗАГОВ КОГДА ЦИКЛ НЕ СБРАСЫВАЕТСЯ - for _, direction := range directions
 			}
 		}
 	}
