@@ -36,7 +36,7 @@ func main() {
 	var filePathFull string
 
 	// Цикл для обработки каждого файла в каталоге "63_4"
-	for i := 1; i <= 5; i++ {
+	for i := 1; i <= 1; i++ {
 		iStr := strconv.Itoa(i)
 		// Путь до файла
 		filePathFull = fmt.Sprintf("%s%s", filePath, iStr)
@@ -73,7 +73,7 @@ func main() {
 		for j := 1; j <= numOfSetsInt; j++ {
 			allSlices[j-1] = readDim(rdr)
 			wHouse := allSlices[j-1]
-			fmt.Println("wH:", wHouse)
+			//fmt.Println("wH:", wHouse)
 
 			maxSlice := result["MAX"]
 			aSlice := result["A"]
@@ -89,9 +89,9 @@ func main() {
 			end.x = maxSlice[0] - 1
 			end.y = maxSlice[1] - 1
 
-			fmt.Printf("%v%v%v\n", aSlice, bSlice, maxSlice)
+			//fmt.Printf("%v%v%v\n", aSlice, bSlice, maxSlice)
 
-			fmt.Println("robots:", robotA, robotB)
+			//fmt.Println("robots:", robotA, robotB)
 
 			// Срез для хранения разности чисел между MAX и A
 			resultASlice := []int{}
@@ -113,19 +113,19 @@ func main() {
 			for i := 0; i < len(resultASlice); i++ {
 				sumA += resultASlice[i]
 			}
-			fmt.Println("len A:", sumA)
+			//fmt.Println("len A:", sumA)
 			// Сумма разницы чисел между МАХ и В
 			sumB := 0
 			for i := 0; i < len(resultBSlice); i++ {
 				sumB += resultBSlice[i]
 			}
-			fmt.Println("len B:", sumB)
+			//fmt.Println("len B:", sumB)
 
 			switch {
 
 			case sumA > sumB:
 				{
-					fmt.Println("sumA > sumB")
+					//fmt.Println("sumA > sumB")
 					// алгоритм по которому будет дописываться путь робота A к 0; B к MAX
 					//Start walking the maze run
 					steps := run(wHouse, robotA, point{0, 0})
@@ -133,33 +133,33 @@ func main() {
 					//Give a path according to steps
 					wHouse = changeMatrix(wHouse, steps, "a", robotA, point{0, 0})
 
-					fmt.Println("steps:")
-					for x := range steps {
-						for y := range steps[x] {
-							fmt.Printf("%4d", steps[x][y])
-						}
-						fmt.Println()
-					}
+					//fmt.Println("steps:")
+					// for x := range steps {
+					// 	for y := range steps[x] {
+					// 		fmt.Printf("%4d", steps[x][y])
+					// 	}
+					// 	fmt.Println()
+					// }
 
-					fmt.Println("changed maze:")
-					for i := range wHouse {
-						for j := range wHouse[i] {
-							fmt.Printf("%s", wHouse[i][j])
-						}
-						fmt.Println()
-					}
+					// fmt.Println("changed maze:")
+					// for i := range wHouse {
+					// 	for j := range wHouse[i] {
+					// 		fmt.Printf("%s", wHouse[i][j])
+					// 	}
+					// 	fmt.Println()
+					// }
 
 					steps = run(wHouse, robotB, end)
 
 					wHouse1 := changeMatrix(wHouse, steps, "b", robotB, end)
 
-					fmt.Println("steps:")
-					for x := range steps {
-						for y := range steps[x] {
-							fmt.Printf("%4d", steps[x][y])
-						}
-						fmt.Println()
-					}
+					//fmt.Println("steps:")
+					// for x := range steps {
+					// 	for y := range steps[x] {
+					// 		fmt.Printf("%4d", steps[x][y])
+					// 	}
+					// 	fmt.Println()
+					// }
 
 					fmt.Println("changed maze:")
 					for x := range wHouse1 {
@@ -174,7 +174,7 @@ func main() {
 			case sumB > sumA:
 
 				{
-					fmt.Println("sumB > sumA")
+					//fmt.Println("sumB > sumA")
 					// алгоритм по которому будет дописываться путь робота B к 0; А к МАХ
 					//Start walking the maze run
 					steps := run(wHouse, robotA, end)
@@ -182,33 +182,33 @@ func main() {
 					//Give a path according to steps
 					wHouse = changeMatrix(wHouse, steps, "a", robotA, end)
 
-					fmt.Println("steps:")
-					for x := range steps {
-						for y := range steps[x] {
-							fmt.Printf("%4d", steps[x][y])
-						}
-						fmt.Println()
-					}
+					//fmt.Println("steps:")
+					// for x := range steps {
+					// 	for y := range steps[x] {
+					// 		fmt.Printf("%4d", steps[x][y])
+					// 	}
+					// 	fmt.Println()
+					// }
 
-					fmt.Println("changed maze:")
-					for x := range wHouse {
-						for y := range wHouse[x] {
-							fmt.Printf("%s", wHouse[x][y])
-						}
-						fmt.Println()
-					}
+					// fmt.Println("changed maze:")
+					// for x := range wHouse {
+					// 	for y := range wHouse[x] {
+					// 		fmt.Printf("%s", wHouse[x][y])
+					// 	}
+					// 	fmt.Println()
+					// }
 
 					steps = run(wHouse, robotB, point{0, 0})
 
 					wHouse1 := changeMatrix(wHouse, steps, "b", robotB, point{0, 0})
 
-					fmt.Println("steps:")
-					for x := range steps {
-						for y := range steps[x] {
-							fmt.Printf("%4d", steps[x][y])
-						}
-						fmt.Println()
-					}
+					//fmt.Println("steps:")
+					// for x := range steps {
+					// 	for y := range steps[x] {
+					// 		fmt.Printf("%4d", steps[x][y])
+					// 	}
+					// 	fmt.Println()
+					// }
 
 					fmt.Println("changed maze:")
 					for x := range wHouse1 {
@@ -218,16 +218,9 @@ func main() {
 						fmt.Println()
 					}
 				}
-
 			}
-
-			// Выводим разность
-			// fmt.Println("Разность чисел между MAX и A:", resultASlice)
-			// fmt.Println("Разность чисел между MAX и B:", resultBSlice)
-
 		}
 	}
-
 }
 
 func checkDim(numbersStr []string) (vertic, horizon int) {
@@ -307,62 +300,17 @@ func readDim(rdr *bufio.Reader) [][]string {
 	return matrix
 }
 
-// func subtracPositions(result map[string][]int) {
-
-// 	// Извлекаем срезы для MAX, A и B
-// 	maxSlice := result["MAX"]
-// 	aSlice := result["A"]
-// 	bSlice := result["B"]
-
-// 	// Срез для хранения разности чисел между MAX и A
-// 	resultASlice := []int{}
-
-// 	// Разность чисел между MAX и A
-// 	for i := 0; i < len(maxSlice); i++ {
-// 		resultASlice = append(resultASlice, maxSlice[i]-aSlice[i])
-// 	}
-
-// 	// Срез для хранения разности чисел между MAX и B
-// 	resultBSlice := []int{}
-
-// 	// Разность чисел между MAX и B
-// 	for i := 0; i < len(maxSlice); i++ {
-// 		resultBSlice = append(resultBSlice, maxSlice[i]-bSlice[i])
-// 	}
-// 	// Сумма разницы чисел между МАХ и А
-// 	sumA := 0
-// 	for i := 0; i < len(resultASlice); i++ {
-// 		sumA += resultASlice[i]
-// 	}
-// 	//fmt.Println("len A", sumA)
-// 	// Сумма разницы чисел между МАХ и В
-// 	sumB := 0
-// 	for i := 0; i < len(resultBSlice); i++ {
-// 		sumB += resultBSlice[i]
-// 	}
-// 	//fmt.Println("len B", sumB)
-// 	if sumA > sumB {
-// 		// алгоритм по которому будет дописываться путь робота в точку 0;0
-
-// 	} else {
-// 		// алгоритм по которому будет дописываться путь робота в точку MAX
-// 	}
-// 	// Выводим разность
-// 	//fmt.Println("Разность чисел между MAX и A:", resultASlice)
-// 	//fmt.Println("Разность чисел между MAX и B:", resultBSlice)
-// }
-
 // Координаты вершины
 type point struct {
 	x, y int
 }
 
-// Смещение вверх, влево, вниз, вправо для определения соседей вершины
+// Смещение вверх, вниз, влево, вправо для определения соседей вершины
 var directions = [4]point{
-	{-1, 0},
 	{0, -1},
-	{1, 0},
 	{0, 1},
+	{-1, 0},
+	{1, 0},
 }
 
 // Метод чтобы увеличить значения координаты смещением на одну позицию для координаты вершины
@@ -412,11 +360,11 @@ func changeMatrix(maze [][]string, steps [][]int, robot string, start, end point
 				if next == st {
 					maze[cur.x][cur.y] = robot
 					stopFor = true
-					break 
+					break
 				}
 			}
 		}
-		
+
 		if stopFor {
 			break
 		}
@@ -437,7 +385,7 @@ func changeMatrix(maze [][]string, steps [][]int, robot string, start, end point
 			}
 		}
 	}
-	fmt.Println("end of CHANGE FUNC")
+	//fmt.Println("end of CHANGE FUNC")
 	return maze
 }
 
@@ -448,12 +396,6 @@ func run(maze [][]string, start, end point) [][]int {
 		steps[i] = make([]int, len(maze[i]))
 	}
 
-	// for i := range steps {
-	// 	for j := range steps[i] {
-	// 		steps[i][j] = 0
-	// 	}
-	// }
-	fmt.Println(steps)
 	// Очередь и отправка коор-т стартовой вершины
 	Q := []point{start}
 
@@ -470,6 +412,7 @@ func run(maze [][]string, start, end point) [][]int {
 		if cur == end {
 			continue
 		}
+
 		// Обход координат соседних вершин
 		for _, direction := range directions {
 			// коорд-тА соседА текущей точки с использ-ем смещения
@@ -495,7 +438,5 @@ func run(maze [][]string, start, end point) [][]int {
 			//fmt.Println("Q = append(Q, next)", Q)
 		}
 	}
-	fmt.Println("end of RUN FUNC")
-	// VISITED отрабатывается в noAccess func: if steps[next.x][next.y] != 0
 	return steps
 }
