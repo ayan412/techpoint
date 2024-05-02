@@ -1,0 +1,106 @@
+/*
+func main {
+
+robotA := point{2, 3}
+		robotB := Position{3, 4}
+
+		pathA := bfs(robotA, point{0, 0}, "a")
+		// := bfs(robotB, Position{len(allSlices[0]) - 1, len(allSlices[0][0]) - 1}, "b")
+
+		for point, robot := range pathA.route {
+			wHouse[point.x][point.y] = robot
+		}
+
+		// for point, robot := range pathB.route {
+		// 	wHouse[point.x][point.y] = robot
+		// }
+
+		for _, row := range wHouse {
+			fmt.Println("row", row)
+		}
+
+		shortPath(wHouse, robotA, point{0, 0})
+
+
+
+
+}
+
+
+
+
+type robotPath struct {
+	success bool
+	route   map[point]string
+}
+
+var wHouse [][]string
+
+func isValidCell(x, y int) bool {
+	if x < 0 || x >= len(wHouse) || y < 0 || y >= len(wHouse[0]) { // x строки, y столбцы
+		return false
+	} else {
+		if wHouse[x][y] == "#" || wHouse[x][y] == "A" || wHouse[x][y] == "B" {
+			return false
+		}
+	}
+	//fmt.Println("wHouse", wHouse)
+	return true
+
+}
+
+func shortPath(wHouse [][]string, start, end point) {
+	h := len(wHouse)
+	w := len(wHouse[0])
+	fmt.Println(h, w)
+	visit := make(map[point]bool) // карта для посещенных точек
+	queu := []point{start} // очередь из соседних точек
+
+	for len(queu) > 0 {
+		curren := queu[0] // FIFO zero index = first
+		fmt.Println("(THIS IS queu[0]:", queu[0])
+		queu = queu[1:] // оставшаяся очередь
+
+		if curren == end {
+			break
+		}
+
+		neighbo := []point{{curren.x - 1, curren.y}, {curren.x + 1, curren.y}, {curren.x, curren.y + 1}, {curren.x, curren.y - 1}}
+
+		for _,nei := range neighbo {
+			if isValidCell(nei.x, nei.y) && !visit[nei] {
+				visit[nei] = true
+				queu = append(queu, nei)
+			}
+		}
+	}
+}
+
+//Функция обхода в ширину (BFS)
+func bfs(start, end point, name string) robotPath {
+	visited := make(map[point]bool) // карта для посещенных точек
+	queue := []point{start} // очередь из соседних точек
+	route := make(map[point]string)
+
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+
+		if current == end {
+			return robotPath{true, route}
+		}
+
+		// Перемещаемся во все соседние клетки
+		neighbors := []point{{current.x - 1, current.y}, {current.x + 1, current.y}, {current.x, current.y - 1}, {current.x, current.y + 1}}
+		for _, neighbor := range neighbors {
+			if isValidCell(neighbor.x, neighbor.y) && !visited[neighbor] {
+				visited[neighbor] = true
+				queue = append(queue, neighbor)
+				route[neighbor] = name
+			}
+		}
+	}
+	return robotPath{false, nil}
+}
+
+*/

@@ -3,17 +3,28 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
-
-	//	"reflect"
+	"runtime/pprof"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
 	filePath       string = "./63_4/"   // Каталог, содержащий входные файлы
 	outputFilePath string = "./output/" // Каталог, в который будут записываться выходные файлы
 )
+
+// Функция для измерения времени выполнения
+func duration(msg string, start time.Time) {
+	log.Printf("%v: %v\n", msg, time.Since(start))
+}
+
+// Функция для отслеживания времени выполнения функции
+func track(msg string) (string, time.Time) {
+	return msg, time.Now()
+}
 
 var result = make(map[string][]int)
 
@@ -32,11 +43,21 @@ func writeOutFile(iter int) *os.File {
 }
 
 func main() {
+	f, err := os.Create("memprofile.prof")
+	if err != nil {
+		fmt.Println("Не удалось создать файл профиля:", err)
+		return
+	}
+	defer f.Close()
+
+	pprof.WriteHeapProfile(f)
+
+	defer duration(track("readInput"))
 	// Переменная для хранения пути к текущему файлу
 	var filePathFull string
 
 	// Цикл для обработки каждого файла в каталоге "63_4"
-	for i := 17; i <= 17; i++ {
+	for i := 1; i <= 17; i++ {
 		iStr := strconv.Itoa(i)
 		// Путь до файла
 		filePathFull = fmt.Sprintf("%s%s", filePath, iStr)
@@ -61,162 +82,165 @@ func main() {
 		//Преобразование количества наборов из строки в число
 		numOfSetsStrTrim := strings.TrimSuffix(numOfSetsStr, "\n")
 		numOfSetsInt, _ := strconv.Atoi(numOfSetsStrTrim)
-		fmt.Println("amount of sets:", numOfSetsInt)
+		//fmt.Println("amount of sets:", numOfSetsInt)
 
 		// Создание Writer для записи в выходной файл
 		outWrite := bufio.NewWriter(writeOutFile(i))
 		defer outWrite.Flush()
 
-		//subtracPositions(result)
+		//Запись готовых путей в выходной файл
+		createRoute(numOfSetsInt, rdr, outWrite)
+	}
+}
 
-		allSlices := make([][][]string, numOfSetsInt)
-		for j := 1; j <= numOfSetsInt; j++ {
-			allSlices[j-1] = readDim(rdr)
-			wHouse := allSlices[j-1]
-			//fmt.Println("wH:", wHouse)
+func createRoute(numOfSetsInt int, rdr *bufio.Reader, outWrite *bufio.Writer) {
+	allSlices := make([][][]string, numOfSetsInt)
+	for j := 1; j <= numOfSetsInt; j++ {
+		allSlices[j-1] = readDim(rdr)
+		wHouse := allSlices[j-1]
+		//fmt.Println("wH:", wHouse)
 
-			maxSlice := result["MAX"]
-			aSlice := result["A"]
-			bSlice := result["B"]
+		maxSlice := result["MAX"]
+		aSlice := result["A"]
+		bSlice := result["B"]
 
-			var robotA, robotB, end point
-			robotA.x = aSlice[0] - 1
-			robotA.y = aSlice[1] - 1
+		var robotA, robotB, end point
+		robotA.x = aSlice[0] - 1
+		robotA.y = aSlice[1] - 1
 
-			robotB.x = bSlice[0] - 1
-			robotB.y = bSlice[1] - 1
+		robotB.x = bSlice[0] - 1
+		robotB.y = bSlice[1] - 1
 
-			end.x = maxSlice[0] - 1
-			end.y = maxSlice[1] - 1
+		end.x = maxSlice[0] - 1
+		end.y = maxSlice[1] - 1
 
-			//fmt.Printf("%v%v%v\n", aSlice, bSlice, maxSlice)
+		//fmt.Printf("%v%v%v\n", aSlice, bSlice, maxSlice)
 
-			//fmt.Println("robots:", robotA, robotB)
+		//fmt.Println("robots:", robotA, robotB)
 
-			// Срез для хранения разности чисел между MAX и A
-			resultASlice := []int{}
+		// Срез для хранения разности чисел между MAX и A
+		resultASlice := []int{}
 
-			// Разность чисел между MAX и A
-			for i := 0; i < len(maxSlice); i++ {
-				resultASlice = append(resultASlice, maxSlice[i]-aSlice[i])
-			}
+		// Разность чисел между MAX и A
+		for i := 0; i < len(maxSlice); i++ {
+			resultASlice = append(resultASlice, maxSlice[i]-aSlice[i])
+		}
 
-			// Срез для хранения разности чисел между MAX и B
-			resultBSlice := []int{}
+		// Срез для хранения разности чисел между MAX и B
+		resultBSlice := []int{}
 
-			// Разность чисел между MAX и B
-			for i := 0; i < len(maxSlice); i++ {
-				resultBSlice = append(resultBSlice, maxSlice[i]-bSlice[i])
-			}
-			// Сумма разницы чисел между МАХ и А
-			sumA := 0
-			for i := 0; i < len(resultASlice); i++ {
-				sumA += resultASlice[i]
-			}
-			//fmt.Println("len A:", sumA)
-			// Сумма разницы чисел между МАХ и В
-			sumB := 0
-			for i := 0; i < len(resultBSlice); i++ {
-				sumB += resultBSlice[i]
-			}
-			//fmt.Println("len B:", sumB)
+		// Разность чисел между MAX и B
+		for i := 0; i < len(maxSlice); i++ {
+			resultBSlice = append(resultBSlice, maxSlice[i]-bSlice[i])
+		}
+		// Сумма разницы чисел между МАХ и А
+		sumA := 0
+		for i := 0; i < len(resultASlice); i++ {
+			sumA += resultASlice[i]
+		}
+		//fmt.Println("len A:", sumA)
+		// Сумма разницы чисел между МАХ и В
+		sumB := 0
+		for i := 0; i < len(resultBSlice); i++ {
+			sumB += resultBSlice[i]
+		}
+		//fmt.Println("len B:", sumB)
 
-			switch {
+		switch {
 
-			case sumA > sumB:
-				{
-					//fmt.Println("sumA > sumB")
-					// алгоритм по которому будет дописываться путь робота A к 0; B к MAX
-					//Start walking the maze run
-					steps := run(wHouse, robotA, point{0, 0})
+		case sumA > sumB:
+			{
+				//fmt.Println("sumA > sumB")
+				// алгоритм по которому будет дописываться путь робота A к 0; B к MAX
+				//Start walking the maze run
+				steps := run(wHouse, robotA, point{0, 0})
 
-					//Give a path according to steps
-					wHouse = changeMatrix(wHouse, steps, "a", robotA, point{0, 0})
+				//Give a path according to steps
+				wHouse = changeMatrix(wHouse, steps, "a", robotA, point{0, 0})
 
-					//fmt.Println("steps:")
-					// for x := range steps {
-					// 	for y := range steps[x] {
-					// 		fmt.Printf("%4d", steps[x][y])
-					// 	}
-					// 	fmt.Println()
-					// }
+				//fmt.Println("steps:")
+				// for x := range steps {
+				// 	for y := range steps[x] {
+				// 		fmt.Printf("%4d", steps[x][y])
+				// 	}
+				// 	fmt.Println()
+				// }
 
-					// fmt.Println("changed maze:")
-					// for i := range wHouse {
-					// 	for j := range wHouse[i] {
-					// 		fmt.Printf("%s", wHouse[i][j])
-					// 	}
-					// 	fmt.Println()
-					// }
+				// fmt.Println("changed maze:")
+				// for i := range wHouse {
+				// 	for j := range wHouse[i] {
+				// 		fmt.Printf("%s", wHouse[i][j])
+				// 	}
+				// 	fmt.Println()
+				// }
 
-					steps = run(wHouse, robotB, end)
+				steps = run(wHouse, robotB, end)
 
-					wHouse1 := changeMatrix(wHouse, steps, "b", robotB, end)
+				wHouse1 := changeMatrix(wHouse, steps, "b", robotB, end)
 
-					//fmt.Println("steps:")
-					// for x := range steps {
-					// 	for y := range steps[x] {
-					// 		fmt.Printf("%4d", steps[x][y])
-					// 	}
-					// 	fmt.Println()
-					// }
+				//fmt.Println("steps:")
+				// for x := range steps {
+				// 	for y := range steps[x] {
+				// 		fmt.Printf("%4d", steps[x][y])
+				// 	}
+				// 	fmt.Println()
+				// }
 
-					fmt.Println("changed maze:")
-					for x := range wHouse1 {
-						for y := range wHouse1[x] {
-							fmt.Printf("%s", wHouse1[x][y])
-						}
-						fmt.Println()
+				//fmt.Println("changed maze is done:")
+				for x := range wHouse1 {
+					for y := range wHouse1[x] {
+						fmt.Fprintf(outWrite, "%s", wHouse1[x][y])
 					}
-
+					fmt.Fprintf(outWrite, "\n")
 				}
 
-			case sumB > sumA:
+			}
 
-				{
-					//fmt.Println("sumB > sumA")
-					// алгоритм по которому будет дописываться путь робота B к 0; А к МАХ
-					//Start walking the maze run
-					steps := run(wHouse, robotA, end)
+		case sumB > sumA:
 
-					//Give a path according to steps
-					wHouse = changeMatrix(wHouse, steps, "a", robotA, end)
+			{
+				//fmt.Println("sumB > sumA")
+				// алгоритм по которому будет дописываться путь робота B к 0; А к МАХ
+				//Start walking the maze run
+				steps := run(wHouse, robotA, end)
 
-					//fmt.Println("steps:")
-					// for x := range steps {
-					// 	for y := range steps[x] {
-					// 		fmt.Printf("%4d", steps[x][y])
-					// 	}
-					// 	fmt.Println()
-					// }
+				//Give a path according to steps
+				wHouse = changeMatrix(wHouse, steps, "a", robotA, end)
 
-					// fmt.Println("changed maze:")
-					// for x := range wHouse {
-					// 	for y := range wHouse[x] {
-					// 		fmt.Printf("%s", wHouse[x][y])
-					// 	}
-					// 	fmt.Println()
-					// }
+				//fmt.Println("steps:")
+				// for x := range steps {
+				// 	for y := range steps[x] {
+				// 		fmt.Printf("%4d", steps[x][y])
+				// 	}
+				// 	fmt.Println()
+				// }
 
-					steps = run(wHouse, robotB, point{0, 0})
+				// fmt.Println("changed maze:")
+				// for x := range wHouse {
+				// 	for y := range wHouse[x] {
+				// 		fmt.Printf("%s", wHouse[x][y])
+				// 	}
+				// 	fmt.Println()
+				// }
 
-					wHouse1 := changeMatrix(wHouse, steps, "b", robotB, point{0, 0})
+				steps = run(wHouse, robotB, point{0, 0})
 
-					//fmt.Println("steps:")
-					// for x := range steps {
-					// 	for y := range steps[x] {
-					// 		fmt.Printf("%4d", steps[x][y])
-					// 	}
-					// 	fmt.Println()
-					// }
+				wHouse1 := changeMatrix(wHouse, steps, "b", robotB, point{0, 0})
 
-					fmt.Println("changed maze:")
-					for x := range wHouse1 {
-						for y := range wHouse1[x] {
-							fmt.Printf("%s", wHouse1[x][y])
-						}
-						fmt.Println()
+				//fmt.Println("steps:")
+				// for x := range steps {
+				// 	for y := range steps[x] {
+				// 		fmt.Printf("%4d", steps[x][y])
+				// 	}
+				// 	fmt.Println()
+				// }
+
+				//fmt.Println("changed maze is done:")
+				for x := range wHouse1 {
+					for y := range wHouse1[x] {
+						fmt.Fprintf(outWrite, "%s", wHouse1[x][y])
 					}
+					fmt.Fprintf(outWrite, "\n")
 				}
 			}
 		}
@@ -305,7 +329,7 @@ type point struct {
 	x, y int
 }
 
-// Смещение вверх, вниз, влево, вправо для определения соседей вершины
+// Смещение влево, вправо, вверх, вниз для определения соседей вершины
 var directions = [4]point{
 	{0, -1},
 	{0, 1},
@@ -371,16 +395,16 @@ func changeMatrix(maze [][]string, steps [][]int, robot string, start, end point
 
 		for _, direction := range directions {
 			next = cur.add(direction)
-			// Отнимаем 1, чтобы найти "соседнюю" точку, которая находится ближе к началу пути
-			if next.x >= 0 && next.x < len(maze) && next.y >= 0 && next.y < len(maze[0]) &&
-				// значение по коор-м next = зн-ю по тек-м коор-м т.е.
-				steps[next.x][next.y] == steps[cur.x][cur.y]-1 && maze[next.x][next.y] != "#" {
+			// Отнимаем 1, чтобы найти "соседнюю" точку, которая находится ближе к началу пути И // значение по коор-м next = зн-ю по тек-м коор-м т.е.
+			if next.x >= 0 && next.x < len(maze) && next.y >= 0 && next.y < len(maze[0]) && steps[next.x][next.y] == steps[cur.x][cur.y]-1 && maze[next.x][next.y] != "#" {
+
 				// Заменяем на символ робота в ориг-й матрице
 				maze[cur.x][cur.y] = robot
 
 				// Текущей коор-й становится next
 				cur = next
-				break // ОЧЕНЬ ВАЖНОЕ УСЛОВИЕ ЧТОБЫ НЕ БЫЛО ЛИШНИХ ЗИГЗАГОВ КОГДА ЦИКЛ НЕ СБРАСЫВАЕТСЯ - for _, direction := range directions
+				// ОЧЕНЬ ВАЖНОЕ УСЛОВИЕ - КОГДА ЦИКЛ НЕ НАЧИНАЕТСЯ С НУЛЯ ПРИ НОВОЙ ИТЕРАЦИИ - for _, direction := range directions
+				break
 			}
 		}
 	}
