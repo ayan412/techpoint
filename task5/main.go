@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	//"encoding/json"
+	"encoding/json"
 )
 
 const (
@@ -45,7 +45,7 @@ func getSets() (int, int) {
 
 	//defer duration(track("readiInput"))
 
-	var numSets, numRow int
+	var numSets, numRows int
 
 	// Цикл для обработки каждого файла в каталоге "71_5"
 	for i := 1; i <= 1; i++ {
@@ -84,31 +84,48 @@ func getSets() (int, int) {
 		outWrite := bufio.NewWriter(writeOutFile(i))
 		defer outWrite.Flush()
 
+		// количество наборов входных данных
 		numSets = numOfSetsInt
-
-		numRow = readRows(rdr)
-
+		// кол-во строк
+		numRows = readRows(rdr)
 	}
-	return numSets, numRow
+	return numSets, numRows
 }
 
 // Ф-я для чтения кол-ва строк с описанием директорий
 func readRows(rdr *bufio.Reader) int {
-	strOfSets, err := rdr.ReadString('\n')
+	strOfRow, err := rdr.ReadString('\n')
 	if err != nil {
 		fmt.Println("Error in reading row with sets of rows", err)
 	}
-	strOfSetsTrim := strings.TrimSuffix(strOfSets, "\n")
-	numOfSets, err := strconv.Atoi(strOfSetsTrim)
+	strOfRowsTrim := strings.TrimSuffix(strOfRow, "\n")
+	strOfRows, err := strconv.Atoi(strOfRowsTrim)
 
 	if err != nil {
 		fmt.Println("Error in type converting", err)
 	}
-	return numOfSets
+	return strOfRows
+}
+
+// ???
+var jsonData map[string]interface{}
+
+type Folder struct {
+	Dir string `json:"dir"`
+	Files []string `json:"files"`
+	Folders []Folder `json:"folders,omitempty"`
 }
 
 func main() {
-	fmt.Println(getSets())
-}
+	
+	_, numRows := getSets()
 
+	var 
+	// цикл для чтения строк с JSON
+	for j := 1;j <= numRows; j++ {
+			dt, err := rdr
+	}
+}
+//https://pkg.go.dev/encoding/json#Encoder
+//https://go.dev/blog/json
 
