@@ -2,13 +2,14 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-	"encoding/json"
 )
 
 const (
@@ -46,7 +47,7 @@ func getSets() (int, int) {
 	//defer duration(track("readiInput"))
 
 	var numSets, numRows int
-
+	var rdr *bufio.Reader
 	// Цикл для обработки каждого файла в каталоге "71_5"
 	for i := 1; i <= 1; i++ {
 		iStr := strconv.Itoa(i)
@@ -62,7 +63,8 @@ func getSets() (int, int) {
 		defer f.Close() // Закрытие файла по окончании работы с ним
 
 		// Создание Reader для чтения файла
-		rdr := bufio.NewReader(f)
+		
+		rdr = bufio.NewReader(f)
 
 		// Чтение количества наборов входных данных в файле
 		numOfSetsStr, err := rdr.ReadString('\n')
@@ -88,8 +90,30 @@ func getSets() (int, int) {
 		numSets = numOfSetsInt
 		// кол-во строк
 		numRows = readRows(rdr)
+
 	}
+	readJson(numRows, rdr)
 	return numSets, numRows
+}
+
+func readJson(numRows int, rdr *bufio.Reader) {
+
+	var r FolderPath
+
+	for j := 1; j <= numRows; j++ {
+		dec := json.NewDecoder(rdr)
+		if err := dec.Decode(&r); err == io.EOF {
+			break
+		} else if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("%s, %s\n", r.Files, r.Folders)
+
+		// Находим все файлы с расширениями .hack или .exe
+		files := findHackFiles(r, ".hack", "exe")
+		fmt.Println(len(files))
+	}
+
 }
 
 // Ф-я для чтения кол-ва строк с описанием директорий
@@ -107,25 +131,38 @@ func readRows(rdr *bufio.Reader) int {
 	return strOfRows
 }
 
-// ???
-var jsonData map[string]interface{}
+type FolderPath struct {
+	Dir     string       `json:"-"`
+	Files   []string     `json:"files"`
+	Folders []FolderPath `json:"folders,omitempty"`
+}
 
-type Folder struct {
-	Dir string `json:"dir"`
-	Files []string `json:"files"`
-	Folders []Folder `json:"folders,omitempty"`
+func findHackFiles(fp FolderPath, extensions ...string) []string {
+	var matchingFiles []string
+
+	// Проверяем все файлы в Files
+	for _, file := range fp.Files {
+		for _, ext := range extensions {
+			if strings.HasSuffix(file, ext) {
+				matchingFiles = append(matchingFiles, file)
+				break
+			}
+		}
+	}
+
+	// Проверяем все файлы в Folders
+	for _, folder := range fp.Folders {
+		matchingFiles = append(matchingFiles, findHackFiles(folder, extensions...)...)
+	}
+	return matchingFiles
 }
 
 func main() {
-	
+
 	_, numRows := getSets()
 
-	var 
-	// цикл для чтения строк с JSON
-	for j := 1;j <= numRows; j++ {
-			dt, err := rdr
-	}
-}
-//https://pkg.go.dev/encoding/json#Encoder
-//https://go.dev/blog/json
+	fmt.Println(numRows)
 
+}
+
+// Нужно считать оставшиеся строки с json - взять из task4:263
