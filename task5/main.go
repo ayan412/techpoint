@@ -28,26 +28,28 @@ func track(msg string) (string, time.Time) {
 }
 
 // Функция для создания выходного файла
-func writeOutFile(iter int) *os.File {
+func writeToOutputFile(iter int) *os.File {
 	// Формирование пути к выходному файлу
 	pathToFile := fmt.Sprintf("%s%d.txt", outputFilePath, iter)
 
 	// Открытие или создание файла
 	outFile, err := os.OpenFile(pathToFile, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		fmt.Println("File does not exist or cannot be created:", err)
-		os.Exit(1)
+		fmt.Println("failed to open or create file: %w", err)
+		return nil
 	}
 	return outFile
 }
 
 // Ф-я для чтения первого числа - кол-ва набора данных
-func getSets() (int, int) {
+func readSets() (int, *bufio.Reader, error) {
 
 	//defer duration(track("readiInput"))
 
-	var numSets, numRows int
+	var numSets int
+
 	var rdr *bufio.Reader
+
 	// Цикл для обработки каждого файла в каталоге "71_5"
 	for i := 1; i <= 1; i++ {
 		iStr := strconv.Itoa(i)
@@ -55,51 +57,45 @@ func getSets() (int, int) {
 		filePathFull := fmt.Sprintf("%s%s", filePath, iStr)
 
 		// Открытие файла
-		f, err := os.Open(filePathFull)
+		file, err := os.Open(filePathFull)
 		if err != nil {
-			fmt.Println("Error while opening the file", err)
-			break
+			return 0, nil, fmt.Errorf("error opening the file: %w", err)
 		}
-		defer f.Close() // Закрытие файла по окончании работы с ним
+		//defer file.Close() // Закрытие файла по окончании работы с ним
 
 		// Создание Reader для чтения файла
-		
-		rdr = bufio.NewReader(f)
+		rdr = bufio.NewReader(file)
 
 		// Чтение количества наборов входных данных в файле
 		numOfSetsStr, err := rdr.ReadString('\n')
 		if err != nil {
-			fmt.Println("Error reading amount of sets:", err)
-			break
+			return 0, nil, fmt.Errorf("Error reading amount of sets: %w", err)
 		}
 
-		//Преобразование количества наборов из строки в число
-		numOfSetsStrTrim := strings.TrimSuffix(numOfSetsStr, "\n")
-		numOfSetsInt, err := strconv.Atoi(numOfSetsStrTrim)
+		// Преобразование количества наборов из строки в число
+		numOfSetsStr = strings.TrimSuffix(numOfSetsStr, "\n")
+		numOfSetsInt, err := strconv.Atoi(numOfSetsStr)
 		if err != nil {
-			fmt.Println("Error in casting of set if input Data", err)
+			return 0, nil, fmt.Errorf("failed to convert sets count to int: %w", err)
 		}
-
-		//fmt.Println("amount of sets:", numOfSetsInt)
 
 		// Создание Writer для записи в соответ-й выходной файл
-		outWrite := bufio.NewWriter(writeOutFile(i))
+		outWrite := bufio.NewWriter(writeToOutputFile(i))
 		defer outWrite.Flush()
 
 		// количество наборов входных данных
 		numSets = numOfSetsInt
 		// кол-во строк
-		numRows = readRows(rdr)
-
+		// numRows = readRows(rdr)
 	}
-	readJson(numRows, rdr)
-	return numSets, numRows
+	return numSets, rdr, nil
 }
 
 func readJson(numRows int, rdr *bufio.Reader) {
-
+	// Иниц-ия структуры чтобы избежать пустого указ-ля
 	var r FolderPath
 
+	// Чтение строк где содержится json
 	for j := 1; j <= numRows; j++ {
 		dec := json.NewDecoder(rdr)
 		if err := dec.Decode(&r); err == io.EOF {
@@ -107,6 +103,7 @@ func readJson(numRows int, rdr *bufio.Reader) {
 		} else if err != nil {
 			log.Fatal(err)
 		}
+		// Вывод зн-й по ключам в json
 		fmt.Printf("%s, %s\n", r.Files, r.Folders)
 
 		// Находим все файлы с расширениями .hack или .exe
@@ -122,13 +119,12 @@ func readRows(rdr *bufio.Reader) int {
 	if err != nil {
 		fmt.Println("Error in reading row with sets of rows", err)
 	}
-	strOfRowsTrim := strings.TrimSuffix(strOfRow, "\n")
-	strOfRows, err := strconv.Atoi(strOfRowsTrim)
-
+	strOfRows := strings.TrimSuffix(strOfRow, "\n")
+	numOfRows, err := strconv.Atoi(strOfRows)
 	if err != nil {
 		fmt.Println("Error in type converting", err)
 	}
-	return strOfRows
+	return numOfRows
 }
 
 type FolderPath struct {
@@ -159,9 +155,17 @@ func findHackFiles(fp FolderPath, extensions ...string) []string {
 
 func main() {
 
-	_, numRows := getSets()
+	numSets, rdr, _ := readSets()
 
-	fmt.Println(numRows)
+	for i := range numSets {
+		numRows := readRows(rdr)
+		readJson(numRows, rdr)
+	}
+
+	// for i := 2; i <= numSets; i++ {
+	// 	numRows := readRows(rdr)
+	// 	readJson(numRows, rdr)
+	// }
 
 }
 
