@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strconv"
@@ -42,10 +41,9 @@ func writeToOutputFile(iter int) *os.File {
 	return outFile
 }
 
-
 type FoldersPath struct {
-	Dir     string       `json:"-"`
-	Files   []string     `json:"files"`
+	Dir     string        `json:"-"`
+	Files   []string      `json:"files"`
 	Folders []FoldersPath `json:"folders,omitempty"`
 }
 
@@ -53,9 +51,10 @@ func main() {
 
 	numSets, rdr, _ := readSets()
 
-	for i := 1; i < numSets; i++ {
+	for i := 1; i <= numSets; i++ {
 		numRows := readRows(rdr)
 		readJson(numRows, rdr)
+
 	}
 
 	// for i := 2; i <= numSets; i++ {
@@ -122,22 +121,22 @@ func readJson(numRows int, rdr *bufio.Reader) {
 	var r FoldersPath
 
 	// Чтение строк где содержится json
-	for j := 1; j <= numRows; j++ {
-		dec := json.NewDecoder(rdr)
-		fmt.Println("dec:",dec)
-		if err := dec.Decode(&r); err == io.EOF {
-			break
-		} else if err != nil {
-			log.Fatal(err)
-		}
-		// Вывод зн-й по ключам в json
-		fmt.Printf("%s, %s\n", r.Files, r.Folders)
 
-		// Находим все файлы с расширениями .hack или .exe
-		files := findHackFiles(r, ".hack", "exe")
-		fmt.Println(len(files))
+	var jsonBuilder strings.Builder
+	for j := 1; j <= numRows; j++ {
+		line, err := rdr.ReadString('\n')
+		if err != nil {
+			fmt.Println("ошибка при чтении строки JSON:", err)
+		}
+		jsonBuilder.WriteString(line)
 	}
 
+	if err := json.Unmarshal([]byte(jsonBuilder.String()), &r); err != nil {
+		fmt.Println("ошибка при разборе JSON: %w", err)
+	}
+	fmt.Println("json object:", r)
+	files := findHackFiles(r, ".hack", ".exe")
+	fmt.Println(len(files))
 }
 
 // Ф-я для чтения кол-ва строк с описанием директорий
@@ -153,7 +152,6 @@ func readRows(rdr *bufio.Reader) int {
 	}
 	return numOfRows
 }
-
 
 func findHackFiles(fp FoldersPath, extensions ...string) []string {
 	var matchingFiles []string
@@ -174,7 +172,5 @@ func findHackFiles(fp FoldersPath, extensions ...string) []string {
 	}
 	return matchingFiles
 }
-
-
 
 // Нужно считать оставшиеся строки с json - взять из task4:263
