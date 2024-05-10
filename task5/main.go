@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -39,6 +40,29 @@ func writeToOutputFile(iter int) *os.File {
 		return nil
 	}
 	return outFile
+}
+
+
+type FoldersPath struct {
+	Dir     string       `json:"-"`
+	Files   []string     `json:"files"`
+	Folders []FoldersPath `json:"folders,omitempty"`
+}
+
+func main() {
+
+	numSets, rdr, _ := readSets()
+
+	for i := 1; i < numSets; i++ {
+		numRows := readRows(rdr)
+		readJson(numRows, rdr)
+	}
+
+	// for i := 2; i <= numSets; i++ {
+	// 	numRows := readRows(rdr)
+	// 	readJson(numRows, rdr)
+	// }
+
 }
 
 // Ф-я для чтения первого числа - кол-ва набора данных
@@ -91,13 +115,16 @@ func readSets() (int, *bufio.Reader, error) {
 	return numSets, rdr, nil
 }
 
+var ErrNumberInStream = errors.New("number found in JSON stream")
+
 func readJson(numRows int, rdr *bufio.Reader) {
 	// Иниц-ия структуры чтобы избежать пустого указ-ля
-	var r FolderPath
+	var r FoldersPath
 
 	// Чтение строк где содержится json
 	for j := 1; j <= numRows; j++ {
 		dec := json.NewDecoder(rdr)
+		fmt.Println("dec:",dec)
 		if err := dec.Decode(&r); err == io.EOF {
 			break
 		} else if err != nil {
@@ -127,13 +154,8 @@ func readRows(rdr *bufio.Reader) int {
 	return numOfRows
 }
 
-type FolderPath struct {
-	Dir     string       `json:"-"`
-	Files   []string     `json:"files"`
-	Folders []FolderPath `json:"folders,omitempty"`
-}
 
-func findHackFiles(fp FolderPath, extensions ...string) []string {
+func findHackFiles(fp FoldersPath, extensions ...string) []string {
 	var matchingFiles []string
 
 	// Проверяем все файлы в Files
@@ -153,20 +175,6 @@ func findHackFiles(fp FolderPath, extensions ...string) []string {
 	return matchingFiles
 }
 
-func main() {
 
-	numSets, rdr, _ := readSets()
-
-	for i := range numSets {
-		numRows := readRows(rdr)
-		readJson(numRows, rdr)
-	}
-
-	// for i := 2; i <= numSets; i++ {
-	// 	numRows := readRows(rdr)
-	// 	readJson(numRows, rdr)
-	// }
-
-}
 
 // Нужно считать оставшиеся строки с json - взять из task4:263
