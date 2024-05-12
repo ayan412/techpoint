@@ -42,7 +42,7 @@ func writeToOutputFile(iter int) *os.File {
 }
 
 type FoldersPath struct {
-	Dir     string        `json:"-"`
+	Dir     string        `json:"dir"`
 	Files   []string      `json:"files"`
 	Folders []FoldersPath `json:"folders,omitempty"`
 }
@@ -54,14 +54,7 @@ func main() {
 	for i := 1; i <= numSets; i++ {
 		numRows := readRows(rdr)
 		readJson(numRows, rdr)
-
 	}
-
-	// for i := 2; i <= numSets; i++ {
-	// 	numRows := readRows(rdr)
-	// 	readJson(numRows, rdr)
-	// }
-
 }
 
 // Ф-я для чтения первого числа - кол-ва набора данных
@@ -134,9 +127,9 @@ func readJson(numRows int, rdr *bufio.Reader) {
 	if err := json.Unmarshal([]byte(jsonBuilder.String()), &r); err != nil {
 		fmt.Println("ошибка при разборе JSON: %w", err)
 	}
-	fmt.Println("json object:", r)
-	files := findHackFiles(r, ".hack", ".exe")
-	fmt.Println(len(files))
+	//fmt.Println("json object:", r)
+	files := findHackFiles(r)
+	fmt.Println(files)
 }
 
 // Ф-я для чтения кол-ва строк с описанием директорий
@@ -153,24 +146,25 @@ func readRows(rdr *bufio.Reader) int {
 	return numOfRows
 }
 
-func findHackFiles(fp FoldersPath, extensions ...string) []string {
-	var matchingFiles []string
+func findHackFiles(fp FoldersPath) int {
+	var infectedFilesCount int
 
 	// Проверяем все файлы в Files
 	for _, file := range fp.Files {
-		for _, ext := range extensions {
-			if strings.HasSuffix(file, ext) {
-				matchingFiles = append(matchingFiles, file)
-				break
-			}
+		if strings.HasSuffix(file, ".hack") {
+			infectedFilesCount+= len(fp.Files)
+			continue
 		}
 	}
 
 	// Проверяем все файлы в Folders
 	for _, folder := range fp.Folders {
-		matchingFiles = append(matchingFiles, findHackFiles(folder, extensions...)...)
+		subDirInfectedCount := findHackFiles(folder)
+		if subDirInfectedCount > 0 {
+			infectedFilesCount += len(folder.Folders)
+		}
 	}
-	return matchingFiles
+	return infectedFilesCount
 }
 
 // Нужно считать оставшиеся строки с json - взять из task4:263
