@@ -148,23 +148,69 @@ func readRows(rdr *bufio.Reader) int {
 
 func findHackFiles(fp FoldersPath) int {
 	var infectedFilesCount int
-
-	// Проверяем все файлы в Files
-	for _, file := range fp.Files {
-		if strings.HasSuffix(file, ".hack") {
-			infectedFilesCount+= len(fp.Files)
-			continue
+	// Проверяем относительно корневой директории dir
+	for _, directory := range fp.Dir {
+		if len(string(directory)) < 20 {
+			// Проверяем все файлы в Files
+			for _, file := range fp.Files {
+				if strings.HasSuffix(file, ".hack") {
+					infectedFilesCount = len(fp.Files)
+					for _, folder := range fp.Folders {
+						//fmt.Println(folder)
+						for _, dirFol := range fp.Dir {
+							if len(string(dirFol)) < 20 {
+								infectedFilesCount += len(folder.Folders)
+								//fmt.Println(infectedFilesCount)
+								}
+							}
+						}
+					}
+				}
+			}
+			break
 		}
-	}
+		
+	
 
 	// Проверяем все файлы в Folders
-	for _, folder := range fp.Folders {
-		subDirInfectedCount := findHackFiles(folder)
-		if subDirInfectedCount > 0 {
-			infectedFilesCount += len(folder.Folders)
-		}
-	}
+	//  for _, folder = range fp.Folders {
+	//  	subDirInfectedCount = findHackFiles(folder)
+	//  	if subDirInfectedCount >= 0 {
+	//  		infectedFilesCount += len(folder.Folders)
+	//  	}
+
+	//  	 for _, fileF = range fp.Files {
+	//  	 	if strings.HasSuffix(fileF, ".hack") {
+	//  	 		infectedFilesCount = len(fp.Files) + len(fp.Folders)
+	//  	 	} else {
+	//  	 		continue
+	//  	 	}
+	//  	 }
+	// }
+
 	return infectedFilesCount
 }
+
+
+// func findHackFiles(fp FoldersPath) int {
+// 	var infectedFilesCount int
+
+// 	// Проверяем все файлы в Files
+// 	for _, file := range fp.Files {
+// 		if strings.HasSuffix(file, ".hack") {
+// 			infectedFilesCount+= len(fp.Files)
+// 			continue
+// 		}
+// 	}
+
+// 	// Проверяем все файлы в Folders
+// 	for _, folder := range fp.Folders {
+// 		subDirInfectedCount := findHackFiles(folder)
+// 		if subDirInfectedCount > 0 {
+// 			infectedFilesCount += len(folder.Folders)
+// 		}
+// 	}
+// 	return infectedFilesCount
+// }
 
 // Нужно считать оставшиеся строки с json - взять из task4:263
