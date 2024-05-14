@@ -154,43 +154,57 @@ func findHackFiles(fp FoldersPath) int {
 			// Проверяем все файлы в Files
 			for _, file := range fp.Files {
 				if strings.HasSuffix(file, ".hack") {
+					// На случай если вирус сразу лежит в корне - заражены все файлы и папки
 					infectedFilesCount = len(fp.Files)
-					for _, folder := range fp.Folders {
+					for _, foldeRR := range fp.Folders {
 						//fmt.Println(folder)
-						for _, dirFol := range fp.Dir {
+						// здесь должна быть ф-я для поиска вглубь
+						for _, dirFol := range foldeRR.Dir {
 							if len(string(dirFol)) < 20 {
-								infectedFilesCount += len(folder.Folders)
-								//fmt.Println(infectedFilesCount)
+								for _, fileFol := range foldeRR.Files {
+									fmt.Println(foldeRR.Files)
+									if len(string(fileFol)) < 20 {
+										infectedFilesCount += len(foldeRR.Files)
+										break
+										//fmt.Println(infectedFilesCount)
+									}
+									break
 								}
+								break
 							}
+							break
 						}
+						continue
 					}
+					break
 				}
 			}
-			break
 		}
-		
-	
+		//break
 
-	// Проверяем все файлы в Folders
-	//  for _, folder = range fp.Folders {
-	//  	subDirInfectedCount = findHackFiles(folder)
-	//  	if subDirInfectedCount >= 0 {
-	//  		infectedFilesCount += len(folder.Folders)
-	//  	}
-
-	//  	 for _, fileF = range fp.Files {
-	//  	 	if strings.HasSuffix(fileF, ".hack") {
-	//  	 		infectedFilesCount = len(fp.Files) + len(fp.Folders)
-	//  	 	} else {
-	//  	 		continue
-	//  	 	}
-	//  	 }
-	// }
-
+	}
 	return infectedFilesCount
 }
 
+func findHackFolders(fp FoldersPath) {
+	var infectedFilesCount int
+	// поиск по папкам
+	for _, folder := range fp.Folders {
+		//fmt.Println(folder)
+		// здесь должна быть ф-я для поиска вглубь
+		for _, dirFol := range folder.Dir {
+			if len(string(dirFol)) < 20 {
+				for _, fileFol := range folder.Files {
+					if len(string(fileFol)) < 20 {
+						infectedFilesCount += len(folder.Files)
+						//fmt.Println(infectedFilesCount)
+					}
+				}
+
+			}
+		}
+	}
+}
 
 // func findHackFiles(fp FoldersPath) int {
 // 	var infectedFilesCount int
