@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -44,7 +43,7 @@ func writeToOutputFile(iter int) *os.File {
 type FoldersPath struct {
 	Dir     string        `json:"dir"`
 	Files   []string      `json:"files"`
-	Folders []FoldersPath `json:"folders,omitempty"`
+	Folders []FoldersPath `json:"folders"`
 }
 
 func main() {
@@ -54,7 +53,13 @@ func main() {
 	for i := 1; i <= numSets; i++ {
 		numRows := readRows(rdr)
 		readJson(numRows, rdr)
+
 	}
+	// for i := 2; i <= numSets; i++ {
+	// 	numRows := readRows(rdr)
+	// 	readJson(numRows, rdr)
+	// }
+
 }
 
 // Ф-я для чтения первого числа - кол-ва набора данных
@@ -67,7 +72,7 @@ func readSets() (int, *bufio.Reader, error) {
 	var rdr *bufio.Reader
 
 	// Цикл для обработки каждого файла в каталоге "71_5"
-	for i := 1; i <= 1; i++ {
+	for i := 4; i <= 4; i++ {
 		iStr := strconv.Itoa(i)
 		// Путь до конкретного файла с наборами данных
 		filePathFull := fmt.Sprintf("%s%s", filePath, iStr)
@@ -107,11 +112,9 @@ func readSets() (int, *bufio.Reader, error) {
 	return numSets, rdr, nil
 }
 
-var ErrNumberInStream = errors.New("number found in JSON stream")
-
 func readJson(numRows int, rdr *bufio.Reader) {
 	// Иниц-ия структуры чтобы избежать пустого указ-ля
-	var r FoldersPath
+	var root FoldersPath
 
 	// Чтение строк где содержится json
 
@@ -124,12 +127,21 @@ func readJson(numRows int, rdr *bufio.Reader) {
 		jsonBuilder.WriteString(line)
 	}
 
-	if err := json.Unmarshal([]byte(jsonBuilder.String()), &r); err != nil {
+	if err := json.Unmarshal([]byte(jsonBuilder.String()), &root); err != nil {
 		fmt.Println("ошибка при разборе JSON: %w", err)
 	}
-	//fmt.Println("json object:", r)
-	files := findHackFiles(r)
-	fmt.Println(files)
+
+	infected := make(map[string]bool)
+	findInfected(&root, "", infected)
+
+	// count := 0
+	// for path := range infected {
+	// 	fmt.Println(path)
+	// 	count++
+	// }
+	fmt.Printf("Total infected file and folders: %d\n", len(infected))
+	//fmt.Println(infected)
+
 }
 
 // Ф-я для чтения кол-ва строк с описанием директорий
@@ -146,85 +158,58 @@ func readRows(rdr *bufio.Reader) int {
 	return numOfRows
 }
 
-func findHackFiles(fp FoldersPath) int {
-	var infectedFilesCount int
-	// Проверяем относительно корневой директории dir
-	for _, directory := range fp.Dir {
-		if len(string(directory)) < 20 {
-			// Проверяем все файлы в Files
-			for _, file := range fp.Files {
-				if strings.HasSuffix(file, ".hack") {
-					// На случай если вирус сразу лежит в корне - заражены все файлы и папки
-					infectedFilesCount = len(fp.Files)
-					for _, foldeRR := range fp.Folders {
-						//fmt.Println(folder)
-						// здесь должна быть ф-я для поиска вглубь
-						for _, dirFol := range foldeRR.Dir {
-							if len(string(dirFol)) < 20 {
-								for _, fileFol := range foldeRR.Files {
-									fmt.Println(foldeRR.Files)
-									if len(string(fileFol)) < 20 {
-										infectedFilesCount += len(foldeRR.Files)
-										break
-										//fmt.Println(infectedFilesCount)
-									}
-									break
-								}
-								break
-							}
-							break
-						}
-						continue
-					}
-					break
-				}
-			}
+func findInfected(node *FoldersPath, currentPath string, infected map[string]bool) {
+	fullPath := currentPath + "/" + node.Dir
+
+	hasInfectedFile := false
+
+	// Проверка файлов в текущей директории
+	for _, file := range node.Files {
+		if strings.HasSuffix(file, ".hack") {
+			infected[fullPath+"/"+file] = true
+			hasInfectedFile = true
 		}
-		//break
-
 	}
-	return infectedFilesCount
-}
 
-func findHackFolders(fp FoldersPath) {
-	var infectedFilesCount int
-	// поиск по папкам
-	for _, folder := range fp.Folders {
-		//fmt.Println(folder)
-		// здесь должна быть ф-я для поиска вглубь
-		for _, dirFol := range folder.Dir {
-			if len(string(dirFol)) < 20 {
-				for _, fileFol := range folder.Files {
-					if len(string(fileFol)) < 20 {
-						infectedFilesCount += len(folder.Files)
-						//fmt.Println(infectedFilesCount)
-					}
-				}
+	// Проверка вложенных директорий
+	for i := range node.Folders {
+		findInfected(&node.Folders[i], fullPath, infected)
+	}
 
-			}
+	// Если текущая директория заражена, все файлы и папки внутри нее заражены
+	if hasInfectedFile || isFolderInfected(node, fullPath, infected) {
+
+		//infected[fullPath] = true
+		for _, file := range node.Files {
+			infected[fullPath+"/"+file] = true
+		}
+		for _, subfolder := range node.Folders {
+			markAllInfected(&subfolder, fullPath, infected)
 		}
 	}
 }
 
-// func findHackFiles(fp FoldersPath) int {
-// 	var infectedFilesCount int
+func isFolderInfected(node *FoldersPath, currentPath string, infected map[string]bool) bool {
+	fullPath := currentPath + "/" + node.Dir
+	if infected[fullPath] {
+		return true
+	}
+	for _, subfolder := range node.Folders {
+		if isFolderInfected(&subfolder, fullPath, infected) {
+			return true
+		}
+	}
+	return false
+}
 
-// 	// Проверяем все файлы в Files
-// 	for _, file := range fp.Files {
-// 		if strings.HasSuffix(file, ".hack") {
-// 			infectedFilesCount+= len(fp.Files)
-// 			continue
-// 		}
-// 	}
+func markAllInfected(node *FoldersPath, currentPath string, infected map[string]bool) {
+	fullPath := currentPath + "/" + node.Dir
 
-// 	// Проверяем все файлы в Folders
-// 	for _, folder := range fp.Folders {
-// 		subDirInfectedCount := findHackFiles(folder)
-// 		if subDirInfectedCount > 0 {
-// 			infectedFilesCount += len(folder.Folders)
-// 		}
-// 	}
-// 	return infectedFilesCount
-// }
-
-// Нужно считать оставшиеся строки с json - взять из task4:263
+	//infected[fullPath] = true
+	for _, file := range node.Files {
+		infected[fullPath+"/"+file] = true
+	}
+	for i := range node.Folders {
+		markAllInfected(&node.Folders[i], fullPath, infected)
+	}
+}
