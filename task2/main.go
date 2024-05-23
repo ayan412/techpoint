@@ -6,10 +6,10 @@ import (
 	"io"
 	"log"
 	"os"
+	"runtime/pprof"
 	"strconv"
 	"strings"
 	"time"
-	"runtime/pprof"
 )
 
 const (
@@ -140,12 +140,12 @@ func readInput() {
 
 func main() {
 	f, err := os.Create("memprofile.prof")
-    if err != nil {
-        fmt.Println("He удалось создать файл профиля:", err)
-        return
-    }
-    defer f.Close()
+	if err != nil {
+		fmt.Println("He удалось создать файл профиля:", err)
+		return
+	}
+	defer f.Close()
 
-    pprof.WriteHeapProfile(f)
+	pprof.WriteHeapProfile(f)
 	readInput()
 }
