@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"log"
 	"math"
 	"os"
@@ -99,78 +98,87 @@ func readMatrixFromFile(rdr *bufio.Reader) ([][]int, error) {
 	// Срез (из кол-ва рядов) срезов - [[] [] [] [] [] [] []]
 
 	mtx := make([][]int, numAi)
-	for i := 1; i <= numAi; i++ {
+	for i := 0; i < numAi; i++ {
 		lineStr, err := rdr.ReadString('\n')
-		lineStr = strings.Trim(lineStr, "\n")
+		//fmt.Print(lineStr)
 		if err != nil {
-			log.Fatalf("Error in reading line %v", err)
+			return nil, err
 		}
+
+		lineStr = strings.TrimSpace(lineStr)
+
+		values := strings.Split(lineStr, "")
+		//fmt.Println(values)
+
+		// if len(values) > numBi {
+		// 	return nil, fmt.Errorf("invalid number of values in row %d", i+1)
+		// }
+		
 		//fmt.Println(lineStr)
 		//line, _ := strconv.Atoi((string(lineStr[:len(lineStr)-1])))
 		row := make([]int, numBi)
-		for index, val := range lineStr {
-			num, err := strconv.Atoi(string(val))
+		for index, val := range values {
+			//fmt.Println(val)
+			num, err := strconv.Atoi(val)
+			//fmt.Println(num)
 			if err != nil {
 				return nil, err
 			}
 			row[index] = num
 			//mtx[i-1] = row
 		}
-		mtx[i-1] = row
+		mtx[i] = row
 	}
 	//fmt.Println(mtx)
 	return mtx, nil
 }
 
-// scanner := bufio.NewScanner(file)
-// for scanner.Scan() {
-// 	line := scanner.Text()
-// 	values := strings.Split(line, " ")
-// 	//var row []int
-// 	for _, val := range values {
-// 		num, err := strconv.Atoi(val)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		row = append(row, num)
-// 	}
-// 	matrix = append(matrix, row)
-// }
-
-// if err := scanner.Err(); err != nil {
-// 	return nil, err
-// }
-// fmt.Println(matrix)
-// return matrix, nil
-
 func readTwonumber(reader *bufio.Reader) (a, b int) {
-	for {
-		numAstr, err := reader.ReadString(' ')
-		if err != nil {
-			if err == io.EOF {
-				break
-			} else {
-				fmt.Println("Error reading numAstr:", err)
-				return
-			}
-		}
-
-		numBstr, err := reader.ReadString('\n')
-		if err != nil {
-			if err == io.EOF {
-				break
-			} else {
-				fmt.Println("Error reading numBstr:", err)
-				return
-			}
-		}
-
-		numAi, _ := strconv.Atoi((string(numAstr[:len(numAstr)-1])))
-		numBi, _ := strconv.Atoi((string(numBstr[:len(numBstr)-1])))
-		return numAi, numBi
-
+	line, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatalf("Failed to read line: %v", err)
 	}
-	return
+	line = strings.TrimSpace(line)
+	numbers := strings.Split(line, " ")
+	if len(numbers) != 2 {
+		log.Fatalf("Expected two numbers in the line, got: %v", numbers)
+	}
+	a, err = strconv.Atoi(numbers[0])
+	if err != nil {
+		log.Fatalf("Failed to convert first number to int: %v", err)
+	}
+	b, err = strconv.Atoi(numbers[1])
+	if err != nil {
+		log.Fatalf("Failed to convert second number to int: %v", err)
+	}
+	return a, b
+	// for {
+	// 	numAstr, err := reader.ReadString(' ')
+	// 	if err != nil {
+	// 		if err == io.EOF {
+	// 			break
+	// 		} else {
+	// 			fmt.Println("Error reading numAstr:", err)
+	// 			return
+	// 		}
+	// 	}
+
+	// 	numBstr, err := reader.ReadString('\n')
+	// 	if err != nil {
+	// 		if err == io.EOF {
+	// 			break
+	// 		} else {
+	// 			fmt.Println("Error reading numBstr:", err)
+	// 			return
+	// 		}
+	// 	}
+
+	// 	numAi, _ := strconv.Atoi((string(numAstr[:len(numAstr)-1])))
+	// 	numBi, _ := strconv.Atoi((string(numBstr[:len(numBstr)-1])))
+	// 	return numAi, numBi
+
+	// }
+	// return
 }
 
 func main() {
@@ -188,34 +196,23 @@ func main() {
 	defer duration(track("Total execution time"))
 
 	// Обработка каждого файла в каталоге
-	for i := 3; i <= 3; i++ {
+	for i := 9; i <= 9; i++ {
 		// Чтение набора данных из файла
 		numSets, rdr, _, err := readSets(i)
 		if err != nil {
-			log.Fatalf("Failed to read matrix from file: %v\n", err)
+			log.Fatalf("Failed to read sets from file: %v\n", err)
 		}
 
 		// Обработка каждого набора данных
 		for j := 1; j <= numSets; j++ {
-			matrix, _ := readMatrixFromFile(rdr)
+			matrix, err := readMatrixFromFile(rdr)
+			if err != nil {
+				log.Fatalf("Failed to read matrix from file: %v\n", err)
+			}
 			bestRow, bestCol := findBestRemoval(matrix)
 			fmt.Printf("%d %d\n", bestRow, bestCol)
 		}
-
-	
 	}
-	// matrix := [][]int{
-	// 	{5, 2, 5, 4},
-	// 	{3, 4, 5, 4},
-	// 	{5, 5, 4, 5},
-	// 	{4, 5, 1, 4},
-	// 	{5, 2, 5, 3},
-	// }
-
-	// bestRow, bestCol := findBestRemoval(matrix)
-
-	// fmt.Printf("Removed Row: %d; Removed Column: %d\n", bestRow, bestCol)
-
 }
 
 // findWorst returns the minimun
@@ -232,10 +229,10 @@ func findWorstGrade(matrix [][]int) int {
 }
 
 func removeRowAndColumn(matrix [][]int, rowIndex, colIndex int) [][]int {
-	newMatrix := make([][]int, 0)
+	newMatrix := make([][]int, 0, len(matrix)-1)
 	for i, row := range matrix {
 		if i != rowIndex {
-			newRow := make([]int, 0)
+			newRow := make([]int, 0, len(matrix)-1)
 			for j, grade := range row {
 				if j != colIndex {
 					newRow = append(newRow, grade)
@@ -251,8 +248,7 @@ func removeRowAndColumn(matrix [][]int, rowIndex, colIndex int) [][]int {
 func findBestRemoval(matrix [][]int) (int, int) {
 	//bestMatrix := matrix
 	bestWorstGrade := findWorstGrade(matrix)
-	bestRow := -1
-	bestCol := -1
+	bestRow, bestCol := -1, -1
 
 	// Test removing each row and each column combination
 	for i := range matrix {
