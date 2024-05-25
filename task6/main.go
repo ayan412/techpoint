@@ -152,33 +152,6 @@ func readTwonumber(reader *bufio.Reader) (a, b int) {
 		log.Fatalf("Failed to convert second number to int: %v", err)
 	}
 	return a, b
-	// for {
-	// 	numAstr, err := reader.ReadString(' ')
-	// 	if err != nil {
-	// 		if err == io.EOF {
-	// 			break
-	// 		} else {
-	// 			fmt.Println("Error reading numAstr:", err)
-	// 			return
-	// 		}
-	// 	}
-
-	// 	numBstr, err := reader.ReadString('\n')
-	// 	if err != nil {
-	// 		if err == io.EOF {
-	// 			break
-	// 		} else {
-	// 			fmt.Println("Error reading numBstr:", err)
-	// 			return
-	// 		}
-	// 	}
-
-	// 	numAi, _ := strconv.Atoi((string(numAstr[:len(numAstr)-1])))
-	// 	numBi, _ := strconv.Atoi((string(numBstr[:len(numBstr)-1])))
-	// 	return numAi, numBi
-
-	// }
-	// return
 }
 
 func main() {
@@ -209,8 +182,7 @@ func main() {
 			if err != nil {
 				log.Fatalf("Failed to read matrix from file: %v\n", err)
 			}
-			bestRow, bestCol := findBestRemoval(matrix)
-			fmt.Printf("%d %d\n", bestRow, bestCol)
+			findBestRemoval(matrix)
 		}
 	}
 }
@@ -254,7 +226,7 @@ func removeRowAndColumn(matrix [][]int, row, col int) [][]int {
 }
 
 // findBestRemoval determines which row or column removal maximizes the minimum grade
-func findBestRemoval(matrix [][]int) (int, int) {
+func findBestRemoval(matrix [][]int) {
 	n := len(matrix)
 	m := len(matrix[0])
 
@@ -284,5 +256,5 @@ func findBestRemoval(matrix [][]int) (int, int) {
 			}
 		}
 	}
-	return bestRow + 1, bestCol + 1
+	fmt.Printf("%v %v\n", bestRow, bestCol) 
 }
