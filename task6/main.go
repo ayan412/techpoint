@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
-	"math"
+	//"math"
 	"os"
 	"runtime"
 	"runtime/pprof"
@@ -113,7 +113,7 @@ func readMatrixFromFile(rdr *bufio.Reader) ([][]int, error) {
 		// if len(values) > numBi {
 		// 	return nil, fmt.Errorf("invalid number of values in row %d", i+1)
 		// }
-		
+
 		//fmt.Println(lineStr)
 		//line, _ := strconv.Atoi((string(lineStr[:len(lineStr)-1])))
 		row := make([]int, numBi)
@@ -129,7 +129,7 @@ func readMatrixFromFile(rdr *bufio.Reader) ([][]int, error) {
 		}
 		mtx[i] = row
 	}
-	//fmt.Println(mtx)
+	// fmt.Println(mtx)
 	return mtx, nil
 }
 
@@ -196,7 +196,7 @@ func main() {
 	defer duration(track("Total execution time"))
 
 	// Обработка каждого файла в каталоге
-	for i := 9; i <= 9; i++ {
+	for i := 3; i <= 3; i++ {
 		// Чтение набора данных из файла
 		numSets, rdr, _, err := readSets(i)
 		if err != nil {
@@ -217,47 +217,68 @@ func main() {
 
 // findWorst returns the minimun
 func findWorstGrade(matrix [][]int) int {
-	worst := math.MaxInt32
+
+	worst := 6
+
+outerLoop:
 	for _, row := range matrix {
 		for _, grade := range row {
 			if grade < worst {
 				worst = grade
+				if worst == 1 {
+					break outerLoop
+				}
 			}
 		}
 	}
+	//fmt.Println(worst)
 	return worst
 }
 
-func removeRowAndColumn(matrix [][]int, rowIndex, colIndex int) [][]int {
-	newMatrix := make([][]int, 0, len(matrix)-1)
-	for i, row := range matrix {
-		if i != rowIndex {
-			newRow := make([]int, 0, len(matrix)-1)
-			for j, grade := range row {
-				if j != colIndex {
-					newRow = append(newRow, grade)
-				}
-			}
-			newMatrix = append(newMatrix, newRow)
+func removeRowAndColumn(matrix [][]int, row, col int) [][]int {
+	newMatrix := make([][]int, 0)
+	for i := range matrix {
+		if i == row {
+			continue
 		}
+		newRow := make([]int, 0)
+		for j := range matrix[i] {
+			if j == col {
+				continue
+			}
+			newRow = append(newRow, matrix[i][j])
+		}
+		newMatrix = append(newMatrix, newRow)
 	}
 	return newMatrix
 }
 
 // findBestRemoval determines which row or column removal maximizes the minimum grade
 func findBestRemoval(matrix [][]int) (int, int) {
-	//bestMatrix := matrix
-	bestWorstGrade := findWorstGrade(matrix)
-	bestRow, bestCol := -1, -1
+	n := len(matrix)
+	m := len(matrix[0])
 
-	// Test removing each row and each column combination
-	for i := range matrix {
-		for j := range matrix[0] {
+	// Precompute the row and column sums
+	rowSums := make([]int, n)
+	colSums := make([]int, m)
+	for i := 0; i < n; i++ {
+		for j := 0; j < m; j++ {
+			rowSums[i] += matrix[i][j]
+			colSums[j] += matrix[i][j]
+		}
+	}
+
+	bestWorstGrade := findWorstGrade(matrix)
+	bestRow, bestCol := 0, 0
+
+	// Test removing each row and column combination
+	for i := 0; i < n; i++ {
+		for j := 0; j < m; j++ {
+			// Efficiently compute the new matrix's worst grade
 			tempMatrix := removeRowAndColumn(matrix, i, j)
 			worstGrade := findWorstGrade(tempMatrix)
 			if worstGrade > bestWorstGrade {
 				bestWorstGrade = worstGrade
-				//bestMatrix = tempMatrix
 				bestRow = i
 				bestCol = j
 			}
